@@ -1,4 +1,5 @@
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
 
 export const ContextConfig = createContext();
 
@@ -24,7 +25,12 @@ export const ContextProvider = ({ children }) => {
     const handleLogout = () => {
         setLogin(false);
         setRol(null);
+        Cookies.remove(auth_token);
     };
+
+    useEffect(() => {
+        console.log("Su rol: " , rol)
+    }, [rol])
 
     return (
         <ContextConfig.Provider value={{ login, handleLogin, handleLogout, HOST, rol, handleSession }}>

@@ -15,6 +15,8 @@ import {
 } from "chart.js/auto";
 import Swal from 'sweetalert2';
 import { ContextConfig } from '../context/ContextConfig';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 ChartJS.register(
     CategoryScale,
@@ -30,6 +32,8 @@ ChartJS.register(
 );
 
 const Estadisticas = () => {
+
+    const [loading, setLoading] = useState(false)
 
     const { HOST, handleSession } = useContext(ContextConfig)
     const [fecha, setFecha] = useState('')
@@ -304,6 +308,78 @@ const Estadisticas = () => {
         }
     }
 
+    const handleExportPDF = () => {
+        setLoading(true);
+
+        const input = document.getElementById('componente-exportar');
+
+        const inputWidth = input.offsetWidth;
+        const inputHeight = input.offsetHeight;
+        const aspectRatio = inputWidth / inputHeight;
+        const pdfWidth = 210;
+        const pdfHeight = pdfWidth / aspectRatio;
+
+        html2canvas(input, {
+            scale: 5,
+            scrollY: -window.scrollY,
+            windowWidth: document.documentElement.offsetWidth,
+            windowHeight: document.documentElement.offsetHeight,
+            useCORS: true,
+            logging: true
+        })
+            .then((canvas) => {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdf = new jsPDF({
+                    orientation: pdfWidth > pdfHeight ? 'l' : 'p',
+                    unit: 'mm',
+                    format: [pdfWidth, pdfHeight]
+                });
+
+                const margin = 10;
+                const titleHeight = 5;
+                const remainingHeight = pdfHeight - margin * 2 - titleHeight;
+
+                const imgWidth = pdfWidth - margin * 2;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                const scaledImgHeight = Math.min(imgHeight, remainingHeight);
+                const imgX = margin;
+                // const imgY = (pdfHeight - imgHeight) / 2;
+                const imgY = margin + titleHeight;
+
+                const title = "Reporte de Resultados";
+                const fontSize = 13; // Tamaño de la fuente del título
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(fontSize);
+                pdf.text(title, pdfWidth / 2, margin, { align: 'center' });
+
+                pdf.addImage(imgData, 'JPEG', imgX, imgY, imgWidth, scaledImgHeight);
+
+                const date = new Date();
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+                const hour = date.getHours().toString().padStart(2, '0');
+                const minute = date.getMinutes().toString().padStart(2, '0');
+                const second = date.getSeconds().toString().padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+
+                //pdf.text(`REPORTE DE RESULTADOS - ${formattedDate}`, pdfWidth / 2, margin, { align: 'center' });
+                pdf.save('resultados-ingreso.pdf');
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error('Error al exportar a PDF:', error);
+                setLoading(false);
+            });
+    };
+
+    const borrarFiltros = () => {
+        setFecha('')
+        setTurno('')
+        setAula('')
+    }
+
     useEffect(() => {
         let resumenAula = {}
         let ultimoExamenId = null
@@ -538,33 +614,37 @@ const Estadisticas = () => {
                         <option value="AULA 04">Aula 04</option>
                     </select>
                 </div>
+                <button className='bg-black text-white px-4 rounded-md min-w-28' onClick={borrarFiltros}>BORRAR FILTROS</button>
+                <button className='bg-black text-white px-4 rounded-md min-w-28' onClick={handleExportPDF}>EXPORTAR</button>
             </div>
-            <div className='w-full justify-center items-center flex flex-col md:flex-row gap-4 mt-8'>
-                <div className='bg-[#48c146] py-2 rounded-md w-full md:w-1/2'>
-                    <p className='text-center text-3xl font-bold text-white'>{aprobadosFinal ? aprobadosFinal : '-'}</p>
-                    <p className='text-center text-xl text-white'>APROBADOS</p>
-                </div>
-                <div className='bg-[#ec5353] py-2 rounded-md w-full md:w-1/2'>
-                    <p className='text-center text-3xl font-bold text-white'>{desaprobadosFinal ? desaprobadosFinal : '-'}</p>
-                    <p className='text-center text-xl text-white'>DESAPROBADOS</p>
-                </div>
-            </div>
-            <div className='w-full h-auto lg:h-80 flex flex-col justify-center items-center lg:flex-row my-8'>
-                <div className='lg:w-1/2 w-full justify-center flex h-full min-h-60'>
-                    <Pie data={dataAprobados} options={optionsAprobados} />
-                </div>
-                <div className='lg:w-1/2 w-full justify-center flex h-full min-h-80 mt-8 md:mt-0'>
-                    <Bar data={dataAulas} options={optionsAulas} />
-                </div>
-            </div>
-            <div className='w-full h-auto lg:h-80 flex flex-col justify-center items-center lg:flex-row mt-8'>
-                <div className='lg:w-2/3 w-full justify-center md:flex h-full px-5 md:min-h-[337px] overflow-x-scroll overflow-y-auto'>
-                    <div className='min-w-[500px] md:w-full min-h-80 md:h-auto'>
-                        <Bar data={dataPreguntas} options={optionsPreguntas} />
+            <div id='componente-exportar'>
+                <div className='w-full justify-center items-center flex flex-col md:flex-row gap-4 mt-8'>
+                    <div className='bg-[#48c146] py-2 rounded-md w-full md:w-1/2'>
+                        <p className='text-center text-3xl font-bold text-white'>{aprobadosFinal ? aprobadosFinal : '-'}</p>
+                        <p className='text-center text-xl text-white'>APROBADOS</p>
+                    </div>
+                    <div className='bg-[#ec5353] py-2 rounded-md w-full md:w-1/2'>
+                        <p className='text-center text-3xl font-bold text-white'>{desaprobadosFinal ? desaprobadosFinal : '-'}</p>
+                        <p className='text-center text-xl text-white'>DESAPROBADOS</p>
                     </div>
                 </div>
-                <div className='lg:w-1/3 w-full justify-center flex px-5 md:px-12 min-h-[337px] mt-8 md:mt-0'>
-                    <Bar data={dataGenero} options={optionsGenero} />
+                <div className='w-full h-auto lg:h-80 flex flex-col justify-center items-center lg:flex-row my-8'>
+                    <div className='lg:w-1/2 w-full justify-center flex h-full min-h-60'>
+                        <Pie data={dataAprobados} options={optionsAprobados} />
+                    </div>
+                    <div className='lg:w-1/2 w-full justify-center flex h-full min-h-80 mt-8 md:mt-0'>
+                        <Bar data={dataAulas} options={optionsAulas} />
+                    </div>
+                </div>
+                <div className='w-full h-auto lg:h-80 flex flex-col justify-center items-center lg:flex-row mt-8'>
+                    <div className='lg:w-2/3 w-full justify-center md:flex h-full px-5 md:min-h-[337px] overflow-x-scroll overflow-y-auto'>
+                        <div className='min-w-[500px] md:w-full min-h-80 md:h-auto'>
+                            <Bar data={dataPreguntas} options={optionsPreguntas} />
+                        </div>
+                    </div>
+                    <div className='lg:w-1/3 w-full justify-center flex px-5 md:px-12 min-h-[337px] mt-8 md:mt-0'>
+                        <Bar data={dataGenero} options={optionsGenero} />
+                    </div>
                 </div>
             </div>
         </div>
