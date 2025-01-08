@@ -506,7 +506,7 @@ const Estadisticas = () => {
                             } else if (info.aula === "AULA 03") {
                                 desaprobaula03++;
                             } else if (info.aula === "AULA 04") {
-                                desaprobaula03++;
+                                desaprobaula04++;
                             }
                         }
 
