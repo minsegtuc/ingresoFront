@@ -583,7 +583,7 @@ const Estadisticas = () => {
                             } else if (aula === "AULA 03") {
                                 ausentesAulaAux.push(resumenAula[aula] - aprobaula03 - desaprobaula03);
                             } else if (aula === "AULA 04") {
-                                ausentesAulaAux.push(resumenAula[aula] - aprobaula03 - desaprobaula03);
+                                ausentesAulaAux.push(resumenAula[aula] - aprobaula04 - desaprobaula04);
                             }
                         } else {
                             ausentesAulaAux.push(0);
