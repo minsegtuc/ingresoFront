@@ -381,209 +381,241 @@ const Estadisticas = () => {
     }
 
     useEffect(() => {
-        let resumenAula = {}
-        let ultimoExamenId = null
+        const ejecucion = () => {
+            setAprobadosFinal(null)
+            setDesaprobadosFinal(null)
+            setAprobadosPorc(null)
+            setDesaprobadosPorc(null)
+            setAusentesPorc(null)
+            setAprobadosAula([])
+            setDesaprobadosAula([])
+            setAusentesAula([])
+            setPreguntasRespondidas([])
+            setAprobadosGenero([])
+            setDesaprobadosGenero([])
 
-        let aprobados = 0;
-        let desaprobados = 0;
-        let ausentes = 0;
+            let resumenAula = {}
+            let ultimoExamenId = null
 
-        let aprobaula01 = 0;
-        let aprobaula02 = 0;
-        let aprobaula03 = 0;
-        let desaprobaula01 = 0;
-        let desaprobaula02 = 0;
-        let desaprobaula03 = 0;
+            let aprobados = 0;
+            let desaprobados = 0;
+            let ausentes = 0;
 
-        let pregunta1 = 0;
-        let pregunta2 = 0;
-        let pregunta3 = 0;
-        let pregunta4 = 0;
-        let pregunta5 = 0;
-        let pregunta6 = 0;
-        let pregunta7 = 0;
-        let pregunta8 = 0;
-        let pregunta9 = 0;
-        let pregunta10 = 0;
-        let pregunta11 = 0;
-        let pregunta12 = 0;
-        let pregunta13 = 0;
-        let pregunta14 = 0;
-        let pregunta15 = 0;
-        let pregunta16 = 0;
-        let pregunta17 = 0;
-        let pregunta18 = 0;
-        let pregunta19 = 0;
-        let pregunta20 = 0;
+            let aprobaula01 = 0;
+            let aprobaula02 = 0;
+            let aprobaula03 = 0;
+            let desaprobaula01 = 0;
+            let desaprobaula02 = 0;
+            let desaprobaula03 = 0;
 
-        let masculinosAprobados = 0
-        let femeninasAprobados = 0
-        let masculinosDesaprobados = 0
-        let femeninasDesaprobadas = 0
+            let pregunta1 = 0;
+            let pregunta2 = 0;
+            let pregunta3 = 0;
+            let pregunta4 = 0;
+            let pregunta5 = 0;
+            let pregunta6 = 0;
+            let pregunta7 = 0;
+            let pregunta8 = 0;
+            let pregunta9 = 0;
+            let pregunta10 = 0;
+            let pregunta11 = 0;
+            let pregunta12 = 0;
+            let pregunta13 = 0;
+            let pregunta14 = 0;
+            let pregunta15 = 0;
+            let pregunta16 = 0;
+            let pregunta17 = 0;
+            let pregunta18 = 0;
+            let pregunta19 = 0;
+            let pregunta20 = 0;
 
-        let parametros = {
-            fecha,
-            turno,
-            aula
-        }
+            let masculinosAprobados = 0
+            let femeninasAprobados = 0
+            let masculinosDesaprobados = 0
+            let femeninasDesaprobadas = 0
 
-        fetch(`${HOST}/api/aspirantes/aprobados`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify(parametros)
-        })
-            .then(response => {
-                if (response.status === 200) {
-                    return response.json();
-                } else if (response.status === 403) {
-                    Swal.fire({
-                        title: 'Credenciales caducadas',
-                        icon: 'info',
-                        text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
-                    }).then((result) => {
-                        handleSession()
-                    })
-                }
+            let parametros = {
+                fecha,
+                turno,
+                aula
+            }
+
+            fetch(`${HOST}/api/aspirantes/aprobados`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(parametros)
             })
-            .then(data => {
-                const corte = parseInt(data.corte)
-                const informacion = data.aspirantes;
-                informacion.map(info => {
-                    if (info.examen_id !== ultimoExamenId) {
-                        if (!resumenAula[info.aula]) {
-                            resumenAula[info.aula] = info.cantidad_inscriptos;
-                        } else {
-                            resumenAula[info.aula] += info.cantidad_inscriptos;
-                        }
-
-                        ultimoExamenId = info.examen_id
-                    }
-
-                    //APROBADOS Y DESAPROBADOS
-                    if (info.nota >= corte) {
-                        aprobados++;
-                    } else {
-                        desaprobados++;
-                    }
-
-                    //APROBADOS Y DESAPROBADOS AULAs
-                    if (info.nota >= corte) {
-                        if (info.aula === "AULA 01") {
-                            aprobaula01++;
-                        } else if (info.aula === "AULA 02") {
-                            aprobaula02++;
-                        } else if (info.aula === "AULA 03") {
-                            aprobaula03++;
-                        }
-                    } else {
-                        if (info.aula === "AULA 01") {
-                            desaprobaula01++;
-                        } else if (info.aula === "AULA 02") {
-                            desaprobaula02++;
-                        } else if (info.aula === "AULA 03") {
-                            desaprobaula03++;
-                        }
-                    }
-
-                    //PREGUNTAS
-                    if (info.nota === 1) {
-                        pregunta1++
-                    } else if (info.nota === 2) {
-                        pregunta2++
-                    } else if (info.nota === 3) {
-                        pregunta3++
-                    } else if (info.nota === 4) {
-                        pregunta4++
-                    } else if (info.nota === 5) {
-                        pregunta5++
-                    } else if (info.nota === 6) {
-                        pregunta6++
-                    } else if (info.nota === 7) {
-                        pregunta7++
-                    } else if (info.nota === 8) {
-                        pregunta8++
-                    } else if (info.nota === 9) {
-                        pregunta9++
-                    } else if (info.nota === 10) {
-                        pregunta10++
-                    } else if (info.nota === 11) {
-                        pregunta11++
-                    } else if (info.nota === 12) {
-                        pregunta12++
-                    } else if (info.nota === 13) {
-                        pregunta13++
-                    } else if (info.nota === 14) {
-                        pregunta14++
-                    } else if (info.nota === 15) {
-                        pregunta15++
-                    } else if (info.nota === 16) {
-                        pregunta16++
-                    } else if (info.nota === 17) {
-                        pregunta17++
-                    } else if (info.nota === 18) {
-                        pregunta18++
-                    } else if (info.nota === 19) {
-                        pregunta19++
-                    } else if (info.nota === 20) {
-                        pregunta20++
-                    }
-
-                    //MASCULINOS Y FEMENINOS APROBADOS
-                    if (info.genero === "M" && info.nota >= corte) {
-                        masculinosAprobados++
-                    }
-                    if (info.genero === "F" && info.nota >= corte) {
-                        femeninasAprobados++
-                    }
-
-                    //MASCULINOS Y FEMENINOS DESAPROBADOS
-                    if (info.genero === "M" && info.nota <= corte) {
-                        masculinosDesaprobados++
-                    }
-                    if (info.genero === "F" && info.nota <= corte) {
-                        femeninasDesaprobadas++
+                .then(response => {
+                    if (response.status === 200) {
+                        return response.json();
+                    } else if (response.status === 403) {
+                        Swal.fire({
+                            title: 'Credenciales caducadas',
+                            icon: 'info',
+                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
+                        }).then((result) => {
+                            handleSession()
+                        })
                     }
                 })
+                .then(data => {
+                    const corte = parseInt(data.corte)
+                    const informacion = data.aspirantes;
 
-                let ausentesAulaAux = []
+                    console.log(informacion)
 
-                for (let aula in resumenAula) {
-                    if (aula === "AULA 01") {
-                        ausentesAulaAux.splice(0, 0, resumenAula[aula] - aprobaula01 - desaprobaula01)
-                    } else if (aula === "AULA 02") {
-                        ausentesAulaAux.splice(1, 0, resumenAula[aula] - aprobaula02 - desaprobaula02)
-                    } else {
-                        ausentesAulaAux.splice(2, 0, resumenAula[aula] - aprobaula03 - desaprobaula03)
+                    informacion.map(info => {
+                        if (info.examen_id !== ultimoExamenId) {
+                            if (!resumenAula[info.aula]) {
+                                resumenAula[info.aula] = info.cantidad_inscriptos;
+                            } else {
+                                resumenAula[info.aula] += info.cantidad_inscriptos;
+                            }
+
+                            ultimoExamenId = info.examen_id
+                        }
+
+                        //APROBADOS Y DESAPROBADOS
+                        if (info.nota >= corte) {
+                            aprobados++;
+                        } else {
+                            desaprobados++;
+                        }
+
+                        //APROBADOS Y DESAPROBADOS AULAs
+                        if (info.nota >= corte) {
+                            if (info.aula === "AULA 01") {
+                                aprobaula01++;
+                            } else if (info.aula === "AULA 02") {
+                                aprobaula02++;
+                            } else if (info.aula === "AULA 03") {
+                                aprobaula03++;
+                            }
+                        } else {
+                            if (info.aula === "AULA 01") {
+                                desaprobaula01++;
+                            } else if (info.aula === "AULA 02") {
+                                desaprobaula02++;
+                            } else if (info.aula === "AULA 03") {
+                                desaprobaula03++;
+                            }
+                        }
+
+                        //PREGUNTAS
+                        if (info.nota === 1) {
+                            pregunta1++
+                        } else if (info.nota === 2) {
+                            pregunta2++
+                        } else if (info.nota === 3) {
+                            pregunta3++
+                        } else if (info.nota === 4) {
+                            pregunta4++
+                        } else if (info.nota === 5) {
+                            pregunta5++
+                        } else if (info.nota === 6) {
+                            pregunta6++
+                        } else if (info.nota === 7) {
+                            pregunta7++
+                        } else if (info.nota === 8) {
+                            pregunta8++
+                        } else if (info.nota === 9) {
+                            pregunta9++
+                        } else if (info.nota === 10) {
+                            pregunta10++
+                        } else if (info.nota === 11) {
+                            pregunta11++
+                        } else if (info.nota === 12) {
+                            pregunta12++
+                        } else if (info.nota === 13) {
+                            pregunta13++
+                        } else if (info.nota === 14) {
+                            pregunta14++
+                        } else if (info.nota === 15) {
+                            pregunta15++
+                        } else if (info.nota === 16) {
+                            pregunta16++
+                        } else if (info.nota === 17) {
+                            pregunta17++
+                        } else if (info.nota === 18) {
+                            pregunta18++
+                        } else if (info.nota === 19) {
+                            pregunta19++
+                        } else if (info.nota === 20) {
+                            pregunta20++
+                        }
+
+                        //MASCULINOS Y FEMENINOS APROBADOS
+                        if (info.genero === "M" && info.nota >= corte) {
+                            masculinosAprobados++
+                        }
+                        if (info.genero === "F" && info.nota >= corte) {
+                            femeninasAprobados++
+                        }
+
+                        //MASCULINOS Y FEMENINOS DESAPROBADOS
+                        if (info.genero === "M" && info.nota <= corte) {
+                            masculinosDesaprobados++
+                        }
+                        if (info.genero === "F" && info.nota <= corte) {
+                            femeninasDesaprobadas++
+                        }
+                    })
+
+                    const aulas = ["AULA 01", "AULA 02", "AULA 03"];
+                    const ausentesAulaAux = [];
+
+                    for (let i = 0; i < aulas.length; i++) {
+                        const aula = aulas[i];
+                        if (resumenAula[aula]) {
+                            if (aula === "AULA 01") {
+                                ausentesAulaAux.push(resumenAula[aula] - aprobaula01 - desaprobaula01);
+                            } else if (aula === "AULA 02") {
+                                ausentesAulaAux.push(resumenAula[aula] - aprobaula02 - desaprobaula02);
+                            } else if (aula === "AULA 03") {
+                                ausentesAulaAux.push(resumenAula[aula] - aprobaula03 - desaprobaula03);
+                            }
+                        } else {
+                            ausentesAulaAux.push(0);
+                        }
                     }
-                }
 
-                console.log(ausentesAulaAux)
+                    // console.log(ausentesAulaAux)
 
-                const totalInscriptos = Object.values(resumenAula).reduce((acc, inscriptos) => acc + inscriptos, 0);
-                ausentes = totalInscriptos - aprobados - desaprobados
+                    const totalInscriptos = Object.values(resumenAula).reduce((acc, inscriptos) => acc + inscriptos, 0);
+                    ausentes = totalInscriptos - aprobados - desaprobados
 
-                let aprobadosAulaAux = [aprobaula01, aprobaula02, aprobaula03]
-                let desaprobadosAulaAux = [desaprobaula01, desaprobaula02, desaprobaula03]
+                    let aprobadosAulaAux = [aprobaula01, aprobaula02, aprobaula03]
+                    let desaprobadosAulaAux = [desaprobaula01, desaprobaula02, desaprobaula03]
 
-                let preguntasAux = [pregunta1, pregunta2, pregunta3, pregunta4, pregunta5, pregunta6, pregunta7, pregunta8, pregunta9, pregunta10, pregunta11, pregunta12, pregunta13, pregunta14, pregunta15, pregunta16, pregunta17, pregunta18, pregunta19, pregunta20]
-                let aprobadosGeneroAux = [masculinosAprobados, femeninasAprobados]
-                let desaprobadosGeneroAux = [masculinosDesaprobados, femeninasDesaprobadas]
+                    let preguntasAux = [pregunta1, pregunta2, pregunta3, pregunta4, pregunta5, pregunta6, pregunta7, pregunta8, pregunta9, pregunta10, pregunta11, pregunta12, pregunta13, pregunta14, pregunta15, pregunta16, pregunta17, pregunta18, pregunta19, pregunta20]
+                    let aprobadosGeneroAux = [masculinosAprobados, femeninasAprobados]
+                    let desaprobadosGeneroAux = [masculinosDesaprobados, femeninasDesaprobadas]
 
-                setAprobadosFinal(aprobados)
-                setDesaprobadosFinal(desaprobados)
-                setAprobadosPorc(((aprobados * 100) / totalInscriptos).toFixed(2))
-                setDesaprobadosPorc(((desaprobados * 100) / totalInscriptos).toFixed(2))
-                setAusentesPorc(((ausentes * 100) / totalInscriptos).toFixed(2))
-                setAprobadosAula(aprobadosAulaAux)
-                setDesaprobadosAula(desaprobadosAulaAux)
-                setAusentesAula(ausentesAulaAux)
-                setPreguntasRespondidas(preguntasAux)
-                setAprobadosGenero(aprobadosGeneroAux)
-                setDesaprobadosGenero(desaprobadosGeneroAux)
-            })
+                    console.log(ausentesAulaAux)
+
+                    setAprobadosFinal(aprobados)
+                    setDesaprobadosFinal(desaprobados)
+                    setAprobadosPorc(((aprobados * 100) / totalInscriptos).toFixed(2))
+                    setDesaprobadosPorc(((desaprobados * 100) / totalInscriptos).toFixed(2))
+                    setAusentesPorc(((ausentes * 100) / totalInscriptos).toFixed(2))
+                    setAprobadosAula(aprobadosAulaAux)
+                    setDesaprobadosAula(desaprobadosAulaAux)
+                    setAusentesAula(ausentesAulaAux)
+                    setPreguntasRespondidas(preguntasAux)
+                    setAprobadosGenero(aprobadosGeneroAux)
+                    setDesaprobadosGenero(desaprobadosGeneroAux)
+                })
+        }
+
+        const intervalo = setInterval(ejecucion, 5 * 60 * 1000);
+
+        ejecucion()
+
+        return () => clearInterval(intervalo);
+
     }, [fecha, aula, turno])
 
     return (
