@@ -41,7 +41,8 @@ const Notas = () => {
             DNI: aspirante.dni || '-',
             Apellido: aspirante.apellido || '-',
             Nombre: aspirante.nombre || '-',
-            Nota: aspirante.nota ? `${aspirante.nota}/20` : '-'
+            Nota: aspirante.nota ? `${aspirante.nota}/20` : '-',
+            Genero: aspirante.genero || '-'
         }));
     
         // Crear un libro de Excel
@@ -155,6 +156,7 @@ const Notas = () => {
                                     <th className='text-center'>Apellido</th>
                                     <th className='text-center'>Nombre</th>
                                     <th className='text-center'>Nota</th>
+                                    <th className='text-center'>Genero</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -165,6 +167,7 @@ const Notas = () => {
                                             <td className='text-center'>{aspirante.apellido}</td>
                                             <td className='text-center'>{aspirante.nombre}</td>
                                             <td className='text-center'>{aspirante.nota ? aspirante.nota + '/20' : '-'}</td>
+                                            <td className='text-center'>{aspirante.genero}</td>
                                         </tr>
                                     ))
                                 }
