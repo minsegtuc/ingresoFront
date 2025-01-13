@@ -8,12 +8,12 @@ const RutaProtegida = () => {
     const { login, handleLogin, HOST } = useContext(ContextConfig);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        console.log(login)
-    }, [])
+    // useEffect(() => {
+    //     console.log(login)
+    // }, [])
 
     useEffect(() => {
-        console.log("Ingreso a Ruta Protegida");
+        // console.log("Ingreso a Ruta Protegida");
         fetch(`${HOST}/api/verifyToken`, {
             method: 'GET',
             credentials: 'include'

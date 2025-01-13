@@ -39,9 +39,11 @@ const Estadisticas = () => {
     const [fecha, setFecha] = useState('')
     const [turno, setTurno] = useState('')
     const [aula, setAula] = useState('')
+    const [genero, setGenero] = useState('')
 
     const [aprobadosFinal, setAprobadosFinal] = useState(null)
     const [desaprobadosFinal, setDesaprobadosFinal] = useState(null)
+    const [ausentesFinal, setAusentesFinal] = useState(null)
     const [aprobadosPorc, setAprobadosPorc] = useState(null)
     const [desaprobadosPorc, setDesaprobadosPorc] = useState(null)
     const [ausentesPorc, setAusentesPorc] = useState(null)
@@ -151,16 +153,14 @@ const Estadisticas = () => {
                 display: true,
                 color: 'white',
                 font: {
-                    weight: 'bold', // Pone los datos en negrita
-                    size: 17, // Ajusta el tamaño del texto
+                    weight: 'bold', 
+                    size: 17, 
                 },
                 formatter: (value) => {
-                    // Si el porcentaje es menor a 5, no mostrar el label
                     if (value < 5) {
-                        return '';  // Devolver vacío para no mostrar el label
+                        return ''; 
                     }
 
-                    // Si no, muestra el valor con 2 decimales
                     return `${value}`;
                 }
             }
@@ -305,6 +305,8 @@ const Estadisticas = () => {
             setTurno(value);
         } else if (name === 'aula') {
             setAula(value);
+        } else if (name === 'genero') {
+            setGenero(value);
         }
     }
 
@@ -378,12 +380,14 @@ const Estadisticas = () => {
         setFecha('')
         setTurno('')
         setAula('')
+        setGenero('')
     }
 
     useEffect(() => {
         const ejecucion = () => {
             setAprobadosFinal(null)
             setDesaprobadosFinal(null)
+            setAusentesFinal(null)
             setAprobadosPorc(null)
             setDesaprobadosPorc(null)
             setAusentesPorc(null)
@@ -439,7 +443,8 @@ const Estadisticas = () => {
             let parametros = {
                 fecha,
                 turno,
-                aula
+                aula,
+                genero
             }
 
             fetch(`${HOST}/api/aspirantes/aprobados`, {
@@ -467,7 +472,7 @@ const Estadisticas = () => {
                     const corte = parseInt(data.corte)
                     const informacion = data.aspirantes;
 
-                    console.log(informacion)
+                    // console.log(informacion)
 
                     informacion.map(info => {
                         if (info.examen_id !== ultimoExamenId) {
@@ -562,10 +567,10 @@ const Estadisticas = () => {
                         }
 
                         //MASCULINOS Y FEMENINOS DESAPROBADOS
-                        if (info.genero === "M" && info.nota <= corte) {
+                        if (info.genero === "M" && info.nota < corte) {
                             masculinosDesaprobados++
                         }
-                        if (info.genero === "F" && info.nota <= corte) {
+                        if (info.genero === "F" && info.nota < corte) {
                             femeninasDesaprobadas++
                         }
                     })
@@ -602,16 +607,15 @@ const Estadisticas = () => {
                     let aprobadosGeneroAux = [masculinosAprobados, femeninasAprobados]
                     let desaprobadosGeneroAux = [masculinosDesaprobados, femeninasDesaprobadas]
 
-                    console.log(ausentesAulaAux)
-
                     setAprobadosFinal(aprobados)
                     setDesaprobadosFinal(desaprobados)
+                    setAusentesFinal(genero ? null : ausentes)
                     setAprobadosPorc(((aprobados * 100) / totalInscriptos).toFixed(2))
                     setDesaprobadosPorc(((desaprobados * 100) / totalInscriptos).toFixed(2))
-                    setAusentesPorc(((ausentes * 100) / totalInscriptos).toFixed(2))
+                    setAusentesPorc(genero ? null : ((ausentes * 100) / totalInscriptos).toFixed(2))
                     setAprobadosAula(aprobadosAulaAux)
                     setDesaprobadosAula(desaprobadosAulaAux)
-                    setAusentesAula(ausentesAulaAux)
+                    setAusentesAula(genero ? null : ausentesAulaAux)
                     setPreguntasRespondidas(preguntasAux)
                     setAprobadosGenero(aprobadosGeneroAux)
                     setDesaprobadosGenero(desaprobadosGeneroAux)
@@ -624,38 +628,62 @@ const Estadisticas = () => {
 
         return () => clearInterval(intervalo);
 
-    }, [fecha, aula, turno])
+    }, [fecha, aula, turno, genero])
 
     return (
         <div className='text-xs flex flex-col w-full h-full lg:relative lg:left-52'>
             <h1 className='text-[#005CA2] font-bold text-2xl'>ESTADISTICAS</h1>
-            <div className='bg-[#f0f0f0] p-4 mt-4 rounded-md flex lg:flex-row flex-col lg:justify-around gap-3 lg:gap-2 justify-center'>
-                <div className='flex justify-center'>
-                    <label htmlFor="" className='mr-4'>Ingrese fecha:</label>
-                    <input type="date" name="fecha" id="" className='rounded-md min-w-36' value={fecha} onChange={(e) => handleChangeInput(e)} />
+            <div className='bg-[#f0f0f0] p-4 mt-4 rounded-md flex flex-col md:flex-row md:justify-around'>
+                <div className='lg:w-2/3 w-full flex flex-col md:flex-row mb-4 lg:mb-0'>
+                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
+                        <div className='flex justify-center flex-row'>
+                            <div className='flex justify-end w-28 mr-4'>
+                                <label htmlFor="" className=''>Ingrese fecha:</label>
+                            </div>
+                            <input type="date" name="fecha" id="" className='rounded-md min-w-36 px-2' value={fecha} onChange={(e) => handleChangeInput(e)} />
+                        </div>
+                        <div className='flex justify-center flex-row'>
+                            <div className='flex justify-end w-28 mr-4'>
+                                <label htmlFor="" className=''>Ingrese turno:</label>
+                            </div>
+                            <select name="turno" id="" className='rounded-md min-w-36 px-2' value={turno} onChange={(e) => handleChangeInput(e)}>
+                                <option value="" disabled>Seleccione turno</option>
+                                <option value="T01">T01</option>
+                                <option value="T02">T02</option>
+                                <option value="T03">T03</option>
+                                <option value="T04">T04</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
+                        <div className='flex justify-center items-center flex-row'>
+                            <div className='flex justify-end w-28 mr-4'>
+                                <label htmlFor="" className=''>Ingrese aula:</label>
+                            </div>
+                            <select name="aula" id="" className='rounded-md min-w-36 px-2' value={aula} onChange={(e) => handleChangeInput(e)}>
+                                <option value="" disabled>Seleccione aula</option>
+                                <option value="AULA 01">Aula 01</option>
+                                <option value="AULA 02">Aula 02</option>
+                                <option value="AULA 03">Aula 03</option>
+                                <option value="AULA 04">Aula 04</option>
+                            </select>
+                        </div>
+                        <div className='flex justify-center items-center flex-row'>
+                            <div className='flex justify-end w-28 mr-4'>
+                                <label htmlFor="" className=''>Ingrese genero:</label>
+                            </div>
+                            <select name="genero" id="" className='rounded-md min-w-36 px-2' value={genero} onChange={(e) => handleChangeInput(e)}>
+                                <option value="" disabled>Seleccione genero</option>
+                                <option value="M">Masculinos</option>
+                                <option value="F">Femeninas</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div className='flex justify-center'>
-                    <label htmlFor="" className='mr-4'>Ingrese turno:</label>
-                    <select name="turno" id="" className='rounded-md min-w-36' value={turno} onChange={(e) => handleChangeInput(e)}>
-                        <option value="" disabled>Seleccione turno</option>
-                        <option value="T01">T01</option>
-                        <option value="T02">T02</option>
-                        <option value="T03">T03</option>
-                        <option value="T04">T04</option>
-                    </select>
+                <div className='lg:w-1/3 w-full flex flex-col md:flex-row gap-3 justify-center items-center'>
+                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={borrarFiltros}>BORRAR FILTROS</button>
+                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={handleExportPDF}>EXPORTAR</button>
                 </div>
-                <div className='flex justify-center'>
-                    <label htmlFor="" className='mr-4'>Ingrese aula:</label>
-                    <select name="aula" id="" className='rounded-md min-w-36' value={aula} onChange={(e) => handleChangeInput(e)}>
-                        <option value="" disabled>Seleccione aula</option>
-                        <option value="AULA 01">Aula 01</option>
-                        <option value="AULA 02">Aula 02</option>
-                        <option value="AULA 03">Aula 03</option>
-                        <option value="AULA 04">Aula 04</option>
-                    </select>
-                </div>
-                <button className='bg-black text-white px-4 rounded-md min-w-28' onClick={borrarFiltros}>BORRAR FILTROS</button>
-                <button className='bg-black text-white px-4 rounded-md min-w-28' onClick={handleExportPDF}>EXPORTAR</button>
             </div>
             <div id='componente-exportar'>
                 <div className='w-full justify-center items-center flex flex-col md:flex-row gap-4 mt-8'>
@@ -667,6 +695,10 @@ const Estadisticas = () => {
                         <p className='text-center text-3xl font-bold text-white'>{desaprobadosFinal ? desaprobadosFinal : '-'}</p>
                         <p className='text-center text-xl text-white'>DESAPROBADOS</p>
                     </div>
+                    <div className='bg-gray-500 py-2 rounded-md w-full md:w-1/2'>
+                        <p className='text-center text-3xl font-bold text-white'>{ausentesFinal ? ausentesFinal : '-'}</p>
+                        <p className='text-center text-xl text-white'>AUSENTES</p>
+                    </div>
                 </div>
                 <div className='w-full h-auto lg:h-80 flex flex-col justify-center items-center lg:flex-row my-8'>
                     <div className='lg:w-1/2 w-full justify-center flex h-full min-h-60'>
@@ -677,14 +709,14 @@ const Estadisticas = () => {
                     </div>
                 </div>
                 <div className='w-full h-auto lg:h-80 flex flex-col justify-center items-center lg:flex-row mt-8'>
-                    <div className='lg:w-2/3 w-full justify-center md:flex h-full px-5 md:min-h-[337px] overflow-x-scroll overflow-y-auto'>
+                    <div className='lg:w-full w-full justify-center md:flex h-full px-5 md:min-h-[337px] overflow-x-scroll overflow-y-auto'>
                         <div className='min-w-[500px] md:w-full min-h-80 md:h-auto'>
                             <Bar data={dataPreguntas} options={optionsPreguntas} />
                         </div>
                     </div>
-                    <div className='lg:w-1/3 w-full justify-center flex px-5 md:px-12 min-h-[337px] mt-8 md:mt-0'>
+                    {/* <div className='lg:w-1/3 w-full justify-center flex px-5 md:px-12 min-h-[337px] mt-8 md:mt-0'>
                         <Bar data={dataGenero} options={optionsGenero} />
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

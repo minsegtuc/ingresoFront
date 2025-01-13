@@ -10,14 +10,36 @@ const Carga = () => {
     const [aspirantesFile, setAspirantesFile] = useState([]);
     const [examenFile, setExamenFile] = useState([]);
 
+    //PARA CREAR UN EXAMEN
     const [fechaExamen, setFechaExamen] = useState('');
     const [turnoExamen, setTurnoExamen] = useState('');
     const [aulaExamen, setAulaExamen] = useState('');
     const [cantidadExamen, setCantidadExamen] = useState('');
 
+    //PARA ACTUALIZAR EXAMEN
+    const [fechaExamenSearch, setFechaExamenSearch] = useState('');
+    const [turnoExamenSearch, setTurnoExamenSearch] = useState('');
+    const [aulaExamenSearch, setAulaExamenSearch] = useState('');
+    const [idExamenUpdate, setIdExamenUpdate] = useState('')
+    const [fechaExamenUpdate, setFechaExamenUpdate] = useState('');
+    const [turnoExamenUpdate, setTurnoExamenUpdate] = useState('');
+    const [aulaExamenUpdate, setAulaExamenUpdate] = useState('');
+    const [estadoExamenUpdate, setEstadoExamenUpdate] = useState('');
+    const [cantidadExamenUpdate, setCantidadExamenUpdate] = useState('');
+
+    //PARA LAS NOTAS
     const [fechaCarga, setFechaCarga] = useState('');
     const [turnoCarga, setTurnoCarga] = useState('');
     const [aulaCarga, setAulaCarga] = useState('');
+
+    //PARA ASPIRANTES
+    const [dniSearch, setDniSearch] = useState('')
+    const [nombre, setNombre] = useState('')
+    const [apellido, setApellido] = useState('')
+    const [genero, setGenero] = useState('')
+    const [presencia, setPresencia] = useState('')
+    const [nota, setNota] = useState('')
+    const [examenIdAsp, setExamenIdAsp] = useState('')
 
     const cambiarFormatoFecha = (fecha) => {
         const [dia, mes, año] = fecha.split('-');
@@ -144,7 +166,7 @@ const Carga = () => {
                         icon: 'info',
                         text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
                     }).then((result) => {
-                        handleSession()                        
+                        handleSession()
                     })
                 }
             })
@@ -244,7 +266,7 @@ const Carga = () => {
         let aspiranteCountError = 0;
 
         try {
-            console.log("Iniciando procesamiento de resultados");
+            // console.log("Iniciando procesamiento de resultados");
             for (const resultado of examenFile) {
                 const aspiranteACargar = {
                     nota: resultado.nota,
@@ -283,7 +305,7 @@ const Carga = () => {
             }
 
             if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
-                console.log("Todos los aspirantes procesados");
+                // console.log("Todos los aspirantes procesados");
                 const examen = { estado: 1 };
                 const examen_id = await searchExamenId(aulaCarga, turnoCarga, fechaCarga);
 
@@ -292,7 +314,7 @@ const Carga = () => {
                     throw new Error("No se encontró el examen_id");
                 }
 
-                console.log(`Examen ID encontrado: ${examen_id}`);
+                // console.log(`Examen ID encontrado: ${examen_id}`);
                 const examenResponse = await fetch(`${HOST}/api/examenes/update/${examen_id}`, {
                     method: 'PUT',
                     headers: {
@@ -352,13 +374,57 @@ const Carga = () => {
 
     const handleInputCarga = (e) => {
         const { name, value } = e.target;
-        console.log(name, value)
+        // console.log(name, value)
         if (name === 'fechaCarga') {
             setFechaCarga(value);
         } else if (name === 'turnoCarga') {
             setTurnoCarga(value);
         } else if (name === 'aulaCarga') {
             setAulaCarga(value);
+        }
+    }
+
+    const handleInputExamenUpdate = (e) => {
+        const { name, value } = e.target;
+
+        if (name === 'fechaExamenSearch') {
+            setFechaExamenSearch(value);
+        } else if (name === 'turnoExamenSearch') {
+            setTurnoExamenSearch(value);
+        } else if (name === 'aulaExamenSearch') {
+            setAulaExamenSearch(value);
+        } else if (name === 'idExamenUpdate') {
+            setIdExamenUpdate(value)
+        } else if (name === 'fechaExamenUpdate') {
+            setFechaExamenUpdate(value)
+        } else if (name === 'turnoExamenUpdate') {
+            setTurnoExamenUpdate(value)
+        } else if (name === 'aulaExamenUpdate') {
+            setAulaExamenUpdate(value)
+        } else if (name === 'estadoExamenUpdate') {
+            setEstadoExamenUpdate(value)
+        } else if (name === 'cantidadExamenUpdate') {
+            setCantidadExamenUpdate(value)
+        }
+    }
+
+    const handleInputAspiranteUpdate = (e) => {
+        const { name, value } = e.target;
+
+        if (name === 'dniSearch') {
+            setDniSearch(value);
+        } else if (name === 'nombre') {
+            setNombre(value);
+        } else if (name === 'apellido') {
+            setApellido(value);
+        } else if (name === 'genero') {
+            setGenero(value)
+        } else if (name === 'presencia') {
+            setPresencia(value)
+        } else if (name === 'nota') {
+            setNota(value)
+        } else if (name === 'examenIdAsp') {
+            setExamenIdAsp(value)
         }
     }
 
@@ -389,42 +455,42 @@ const Carga = () => {
                         confirmButtonText: 'Aceptar'
                     }).then((result) => {
                         fetch(`${HOST}/api/examenes/estado`, {
-                                method: 'GET',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                credentials: 'include',
-                            })
-                                .then(response => {
-                                    if (response.status === 200) {
-                                        return response.json();
-                                    } else if (response.status === 403) {
-                                        Swal.fire({
-                                            title: 'Credenciales caducadas',
-                                            icon: 'info',
-                                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
-                                        }).then((result) => {
-                                            handleSession()
-                                            
-                                        })
-                                    }
-                                })
-                                .then(data => {
-                                    //console.log(data)
-                                    if (data) {
-                                        const formattedData = data.map(examen => ({
-                                            ...examen,
-                                            fecha: cambiarFormatoFecha(examen.fecha),
-                                        }));
-                                        setExamenes(formattedData);
-                                    }
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            credentials: 'include',
+                        })
+                            .then(response => {
+                                if (response.status === 200) {
+                                    return response.json();
+                                } else if (response.status === 403) {
+                                    Swal.fire({
+                                        title: 'Credenciales caducadas',
+                                        icon: 'info',
+                                        text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
+                                    }).then((result) => {
+                                        handleSession()
 
-                                    setAulaExamen('');
-                                    setCantidadExamen('');
-                                    setFechaExamen('');
-                                    setTurnoExamen('');
-                                })
-                        
+                                    })
+                                }
+                            })
+                            .then(data => {
+                                //console.log(data)
+                                if (data) {
+                                    const formattedData = data.map(examen => ({
+                                        ...examen,
+                                        fecha: cambiarFormatoFecha(examen.fecha),
+                                    }));
+                                    setExamenes(formattedData);
+                                }
+
+                                setAulaExamen('');
+                                setCantidadExamen('');
+                                setFechaExamen('');
+                                setTurnoExamen('');
+                            })
+
                     })
                 } else if (response.status === 403) {
                     Swal.fire({
@@ -482,13 +548,13 @@ const Carga = () => {
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Fecha:</label>
                             </div>
-                            <input type="date" value={fechaExamen} className='w-36 px-2 bg-white' name='fechaExamen' onChange={(e) => handleInputExamen(e)} />
+                            <input type="date" value={fechaExamen} className='w-36 px-2 bg-white border border-gray-400 rounded-md ' name='fechaExamen' onChange={(e) => handleInputExamen(e)} />
                         </div>
                         <div className='flex flex-row'>
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Turno:</label>
                             </div>
-                            <select name="turnoExamen" id="" className='w-36 px-2 bg-white' value={turnoExamen} onChange={(e) => handleInputExamen(e)}>
+                            <select name="turnoExamen" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={turnoExamen} onChange={(e) => handleInputExamen(e)}>
                                 <option value="" disabled>Seleccione turno</option>
                                 <option value="T01">T01</option>
                                 <option value="T02">T02</option>
@@ -500,7 +566,7 @@ const Carga = () => {
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Aula:</label>
                             </div>
-                            <select name="aulaExamen" id="" className='w-36 px-2 bg-white' value={aulaExamen} onChange={(e) => handleInputExamen(e)}>
+                            <select name="aulaExamen" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={aulaExamen} onChange={(e) => handleInputExamen(e)}>
                                 <option value="" disabled>Seleccione aula</option>
                                 <option value="AULA 01">Aula 01</option>
                                 <option value="AULA 02">Aula 02</option>
@@ -512,7 +578,7 @@ const Carga = () => {
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Cantidad:</label>
                             </div>
-                            <input type="number" value={cantidadExamen} className='w-36 px-2 bg-white' name='cantidadExamen' onChange={(e) => handleInputExamen(e)} />
+                            <input type="number" value={cantidadExamen} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='cantidadExamen' onChange={(e) => handleInputExamen(e)} />
                         </div>
                         <button className='bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold' onClick={(handleCargaExamen)}>CARGAR</button>
                     </div>
@@ -560,13 +626,13 @@ const Carga = () => {
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Fecha:</label>
                             </div>
-                            <input type="date" className='w-36 px-2 bg-white' name='fechaCarga' value={fechaCarga} onChange={(e) => handleInputCarga(e)} />
+                            <input type="date" className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='fechaCarga' value={fechaCarga} onChange={(e) => handleInputCarga(e)} />
                         </div>
                         <div className='flex flex-row'>
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Turno:</label>
                             </div>
-                            <select name="turnoCarga" id="" className='w-36 px-2 bg-white' value={turnoCarga} onChange={(e) => handleInputCarga(e)}>
+                            <select name="turnoCarga" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={turnoCarga} onChange={(e) => handleInputCarga(e)}>
                                 <option value="" disabled>Seleccione turno</option>
                                 <option value="T01">T01</option>
                                 <option value="T02">T02</option>
@@ -578,7 +644,7 @@ const Carga = () => {
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Aula:</label>
                             </div>
-                            <select name="aulaCarga" id="" className='w-36 px-2 bg-white' value={aulaCarga} onChange={(e) => handleInputCarga(e)}>
+                            <select name="aulaCarga" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={aulaCarga} onChange={(e) => handleInputCarga(e)}>
                                 <option value="" disabled>Seleccione aula</option>
                                 <option value="AULA 01">Aula 01</option>
                                 <option value="AULA 02">Aula 02</option>
@@ -639,6 +705,164 @@ const Carga = () => {
                         )
                     })
                 }
+            </div>
+            {/* MODIFICAR EXAMEN */}
+            <div className='mt-6 min-h-60 max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
+                <h2 className='text-lg text-[#005CA2] mb-4 text-left w-full pl-3'>Modificar examen</h2>
+                <div className='w-full h-auto flex flex-row'>
+                    <div className='w-1/4 h-auto flex flex-col gap-10 justify-center items-start border-r-[1px] border-gray-400'>
+                        <div className='flex flex-row'>
+                            <div className='flex justify-end w-16'>
+                                <label htmlFor="" className='pr-2'>Fecha:</label>
+                            </div>
+                            <input type="date" value={fechaExamenSearch} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='fechaExamenSearch' onChange={(e) => handleInputExamenUpdate(e)} />
+                        </div>
+                        <div className='flex flex-row'>
+                            <div className='flex justify-end w-16'>
+                                <label htmlFor="" className='pr-2'>Turno:</label>
+                            </div>
+                            <select name="turnoExamenSearch" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={turnoExamenSearch} onChange={(e) => handleInputExamenUpdate(e)}>
+                                <option value="" disabled>Seleccione turno</option>
+                                <option value="T01">T01</option>
+                                <option value="T02">T02</option>
+                                <option value="T03">T03</option>
+                                <option value="T04">T04</option>
+                            </select>
+                        </div>
+                        <div className='flex flex-row'>
+                            <div className='flex justify-end w-16'>
+                                <label htmlFor="" className='pr-2'>Aula:</label>
+                            </div>
+                            <select name="aulaExamenSearch" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={aulaExamenSearch} onChange={(e) => handleInputExamenUpdate(e)}>
+                                <option value="" disabled>Seleccione aula</option>
+                                <option value="AULA 01">Aula 01</option>
+                                <option value="AULA 02">Aula 02</option>
+                                <option value="AULA 03">Aula 03</option>
+                                <option value="AULA 04">Aula 04</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className='w-3/4 h-auto flex flex-row justify-center items-center ml-8 gap-6'>
+                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Id examen:</label>
+                                </div>
+                                <input type="text" value={idExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='idExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Fecha:</label>
+                                </div>
+                                <input type="date" value={fechaExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='fechaExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Turno:</label>
+                                </div>
+                                <select name="turnoExamenUpdate" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={turnoExamenUpdate} onChange={(e) => handleInputExamenUpdate(e)}>
+                                    <option value="" disabled>Seleccione turno</option>
+                                    <option value="T01">T01</option>
+                                    <option value="T02">T02</option>
+                                    <option value="T03">T03</option>
+                                    <option value="T04">T04</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Aula:</label>
+                                </div>
+                                <select name="aulaExamenUpdate" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={aulaExamenUpdate} onChange={(e) => handleInputExamenUpdate(e)}>
+                                    <option value="" disabled>Seleccione aula</option>
+                                    <option value="AULA 01">Aula 01</option>
+                                    <option value="AULA 02">Aula 02</option>
+                                    <option value="AULA 03">Aula 03</option>
+                                    <option value="AULA 04">Aula 04</option>
+                                </select>
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Estado:</label>
+                                </div>
+                                <input type="text" value={estadoExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='estadoExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Cantidad inscriptos:</label>
+                                </div>
+                                <input type="text" value={cantidadExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='cantidadExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
+                            </div>
+                        </div>
+                        <div className='w-1/3 flex justify-center'>
+                            <button className='bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold'>ACTUALIZAR</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* MODIFICAR ASPIRANTE */}
+            <div className='mt-6 min-h-60 max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
+                <h2 className='text-lg text-[#005CA2] mb-4 text-left w-full pl-3'>Modificar aspirante</h2>
+                <div className='w-full h-auto flex flex-row'>
+                    <div className='w-1/4 h-auto flex flex-col gap-10 justify-center items-start border-r-[1px] border-gray-400'>
+                        <div className='flex flex-row'>
+                            <div className='flex justify-end w-16'>
+                                <label htmlFor="" className='pr-2'>DNI:</label>
+                            </div>
+                            <input type="date" value={dniSearch} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                        </div>
+                    </div>
+                    <div className='w-3/4 h-auto flex flex-row justify-center items-center ml-8 gap-6'>
+                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Nombre:</label>
+                                </div>
+                                <input type="text" value={nombre} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='nombre' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Apellido:</label>
+                                </div>
+                                <input type="text" value={apellido} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='apellido' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Genero:</label>
+                                </div>
+                                <select name="genero" id="" className='rounded-md min-w-36 px-2 bg-white border border-gray-400' value={genero} onChange={(e) => handleInputAspiranteUpdate(e)}>
+                                    <option value="" disabled>Seleccione genero</option>
+                                    <option value="M">Masculinos</option>
+                                    <option value="F">Femeninas</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Presencia:</label>
+                                </div>
+                                <input type="text" value={presencia} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='presencia' onChange={(e) => handleInputExamen(e)} />
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Nota:</label>
+                                </div>
+                                <input type="text" value={nota} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='nota' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                            </div>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-32'>
+                                    <label htmlFor="" className='pr-2'>Examen id:</label>
+                                </div>
+                                <input type="text" value={examenIdAsp} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='examenIdAsp' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                            </div>
+                        </div>
+                        <div className='w-1/3 flex justify-center'>
+                            <button className='bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold'>ACTUALIZAR</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     )

@@ -28,9 +28,9 @@ export const ContextProvider = ({ children }) => {
         Cookies.remove(auth_token);
     };
 
-    useEffect(() => {
-        console.log("Su rol: " , rol)
-    }, [rol])
+    // useEffect(() => {
+    //     console.log("Su rol: " , rol)
+    // }, [rol])
 
     return (
         <ContextConfig.Provider value={{ login, handleLogin, handleLogout, HOST, rol, handleSession }}>
