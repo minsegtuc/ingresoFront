@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 
 const Notas = () => {
 
-    const [fecha, setFecha] = useState('')
+    const [fecha, setFecha] = useState(`${new Date().getFullYear()}-${(new Date().getMonth())+1}-${new Date().getDay()}`)
     const [turno, setTurno] = useState('')
     const [aula, setAula] = useState('')
     const [genero, setGenero] = useState('')
@@ -63,7 +63,7 @@ const Notas = () => {
     };
 
     const borrarFiltros = () => {
-        setFecha('')
+        setFecha(`${new Date().getFullYear()}-${(new Date().getMonth())+1}-${new Date().getDay()}`)
         setTurno('')
         setAula('')
         setGenero('')

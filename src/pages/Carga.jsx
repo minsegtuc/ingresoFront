@@ -1,6 +1,8 @@
 import React, { useEffect, useContext, useState } from 'react'
 import { ContextConfig } from '../context/ContextConfig';
 import Swal from 'sweetalert2';
+import { CiCircleInfo } from "react-icons/ci";
+import { Tooltip } from 'react-tooltip';
 import * as XLSX from 'xlsx';
 
 const Carga = () => {
@@ -40,6 +42,14 @@ const Carga = () => {
     const [presencia, setPresencia] = useState('')
     const [nota, setNota] = useState('')
     const [examenIdAsp, setExamenIdAsp] = useState('')
+
+    const [loadingCargaExamen, setLoadinCargaExamen] = useState(false)
+    const [loadingCargaAspirantes, setLoadinCargaAspirantes] = useState(false)
+    const [loadingCargaNotas, setLoadinCargaNotas] = useState(false)
+    const [loadingSearchExamen, setLoadingSearchExamen] = useState(false)
+    const [loadingSearchAspirante, setLoadingSearchAspirante] = useState(false)
+    const [loadingUpdateExamen, setLoadinUpdateExamen] = useState(false)
+    const [loadingUpdateAspirante, setLoadingUpdateAspirante] = useState(false)
 
     const cambiarFormatoFecha = (fecha) => {
         const [dia, mes, año] = fecha.split('-');
@@ -191,6 +201,7 @@ const Carga = () => {
                 confirmButtonText: 'Aceptar'
             })
         } else {
+            setLoadinCargaAspirantes(true)
             const aspirantesFileFinal = await Promise.all(
                 aspirantesFile.map(async (aspirante) => ({
                     ...aspirante,
@@ -218,6 +229,7 @@ const Carga = () => {
                         if (response.status === 200) {
                             aspiranteCountOk++;
                             if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
+                                setLoadinCargaAspirantes(false)
                                 Swal.fire({
                                     title: 'Aspirantes cargados',
                                     icon: 'success',
@@ -226,6 +238,7 @@ const Carga = () => {
                                 })
                             }
                         } else if (response.status === 403) {
+                            setLoadinCargaAspirantes(false)
                             Swal.fire({
                                 title: 'Credenciales caducadas',
                                 icon: 'info',
@@ -242,6 +255,7 @@ const Carga = () => {
     }
 
     const handleUploadResultados = async () => {
+        setLoadinCargaNotas(true)
         if (examenFile.length === 0) {
             Swal.fire({
                 title: 'Archivo vacío',
@@ -265,27 +279,89 @@ const Carga = () => {
         let aspiranteCountOk = 0;
         let aspiranteCountError = 0;
 
-        try {
-            // console.log("Iniciando procesamiento de resultados");
-            for (const resultado of examenFile) {
-                const aspiranteACargar = {
-                    nota: resultado.nota,
-                    presencia: 1,
-                };
+        const [dia, mes, año] = fechaCarga.split('-');
+        const fechaFormatted = `${año}-${mes}-${dia}`
 
-                try {
-                    const response = await fetch(`${HOST}/api/aspirantes/update/${resultado.dni}`, {
+        const examenCheck = examenes.some(examen =>
+            examen.turno === turnoCarga &&
+            examen.fecha === fechaFormatted &&
+            examen.aula === aulaCarga &&
+            examen.estado === 0
+        );
+
+        if (examenCheck) {
+            try {
+                for (const resultado of examenFile) {
+                    const aspiranteACargar = {
+                        nota: resultado.nota,
+                        presencia: 1,
+                    };
+
+                    try {
+                        const response = await fetch(`${HOST}/api/aspirantes/update/${resultado.dni}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify(aspiranteACargar),
+                        });
+
+                        if (response.status === 200) {
+                            aspiranteCountOk++;
+                        } else if (response.status === 403) {
+                            Swal.fire({
+                                title: 'Credenciales caducadas',
+                                icon: 'info',
+                                text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesión',
+                            }).then((result) => {
+                                handleSession();
+                            });
+                            return;
+                        } else {
+                            console.warn(`Error en el fetch aspirante: ${response.status}`);
+                            aspiranteCountError++;
+                        }
+                    } catch (error) {
+                        console.error(`Error actualizando aspirante DNI ${resultado.dni}:`, error.message);
+                        aspiranteCountError++;
+                    }
+                }
+
+                if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
+                    // console.log("Todos los aspirantes procesados");
+                    const examen = { estado: 1 };
+                    const examen_id = await searchExamenId(aulaCarga, turnoCarga, fechaCarga);
+
+                    if (!examen_id) {
+                        console.error("Error: examen_id no encontrado");
+                        throw new Error("No se encontró el examen_id");
+                    }
+
+                    // console.log(`Examen ID encontrado: ${examen_id}`);
+                    const examenResponse = await fetch(`${HOST}/api/examenes/update/${examen_id}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         credentials: 'include',
-                        body: JSON.stringify(aspiranteACargar),
+                        body: JSON.stringify(examen),
                     });
 
-                    if (response.status === 200) {
-                        aspiranteCountOk++;
-                    } else if (response.status === 403) {
+                    if (examenResponse.status === 200) {
+                        setAulaCarga('')
+                        setFechaCarga('')
+                        setTurnoCarga('')
+                        estadoExamenes()
+                        setLoadinCargaNotas(false)
+                        Swal.fire({
+                            title: 'Notas cargadas',
+                            icon: 'success',
+                            text: `Aspirantes cargados correctamente: ${aspiranteCountOk} - Errores: ${aspiranteCountError}`,
+                            confirmButtonText: 'Aceptar',
+                        });
+                    } else if (examenResponse.status === 403) {
+                        setLoadinCargaNotas(false)
                         Swal.fire({
                             title: 'Credenciales caducadas',
                             icon: 'info',
@@ -293,69 +369,29 @@ const Carga = () => {
                         }).then((result) => {
                             handleSession();
                         });
-                        return;
                     } else {
-                        console.warn(`Error en el fetch aspirante: ${response.status}`);
-                        aspiranteCountError++;
+                        console.error(`Error en examenResponse: ${examenResponse.status}`);
                     }
-                } catch (error) {
-                    console.error(`Error actualizando aspirante DNI ${resultado.dni}:`, error.message);
-                    aspiranteCountError++;
                 }
-            }
-
-            if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
-                // console.log("Todos los aspirantes procesados");
-                const examen = { estado: 1 };
-                const examen_id = await searchExamenId(aulaCarga, turnoCarga, fechaCarga);
-
-                if (!examen_id) {
-                    console.error("Error: examen_id no encontrado");
-                    throw new Error("No se encontró el examen_id");
-                }
-
-                // console.log(`Examen ID encontrado: ${examen_id}`);
-                const examenResponse = await fetch(`${HOST}/api/examenes/update/${examen_id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(examen),
+            } catch (error) {
+                console.error("Error procesando resultados:", error.message);
+                setLoadinCargaNotas(false)
+                Swal.fire({
+                    title: 'Error',
+                    icon: 'error',
+                    text: 'Ocurrió un error al procesar los resultados. Intente nuevamente.',
+                    confirmButtonText: 'Aceptar',
                 });
-
-                if (examenResponse.status === 200) {
-                    setAulaCarga('')
-                    setFechaCarga('')
-                    setTurnoCarga('')
-                    estadoExamenes()
-                    Swal.fire({
-                        title: 'Notas cargadas',
-                        icon: 'success',
-                        text: `Aspirantes cargados correctamente: ${aspiranteCountOk} - Errores: ${aspiranteCountError}`,
-                        confirmButtonText: 'Aceptar',
-                    });
-                } else if (examenResponse.status === 403) {
-                    Swal.fire({
-                        title: 'Credenciales caducadas',
-                        icon: 'info',
-                        text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesión',
-                    }).then((result) => {
-                        handleSession();
-                    });
-                } else {
-                    console.error(`Error en examenResponse: ${examenResponse.status}`);
-                }
             }
-        } catch (error) {
-            console.error("Error procesando resultados:", error.message);
+        } else {
             Swal.fire({
-                title: 'Error',
+                title: 'Examen repetido',
                 icon: 'error',
-                text: 'Ocurrió un error al procesar los resultados. Intente nuevamente.',
+                text: 'El examen que esta intentando cargar ya se encuentra cargado',
                 confirmButtonText: 'Aceptar',
             });
         }
+
     };
 
     const handleInputExamen = (e) => {
@@ -428,80 +464,335 @@ const Carga = () => {
         }
     }
 
-    const handleCargaExamen = () => {
-        //console.log("Cargando examen")
-
-        const examenACargar = {
-            fecha: fechaExamen,
-            turno: turnoExamen,
-            aula: aulaExamen,
-            cantidad_inscriptos: cantidadExamen,
-        }
-
-        fetch(`${HOST}/api/examenes/examen`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify(examenACargar),
-        })
-            .then(response => {
-                if (response.status === 200) {
-                    Swal.fire({
-                        title: 'Examen cargado',
-                        icon: 'success',
-                        text: 'Examen cargado correctamente',
-                        confirmButtonText: 'Aceptar'
-                    }).then((result) => {
-                        fetch(`${HOST}/api/examenes/estado`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            credentials: 'include',
-                        })
-                            .then(response => {
-                                if (response.status === 200) {
-                                    return response.json();
-                                } else if (response.status === 403) {
-                                    Swal.fire({
-                                        title: 'Credenciales caducadas',
-                                        icon: 'info',
-                                        text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
-                                    }).then((result) => {
-                                        handleSession()
-
-                                    })
-                                }
-                            })
-                            .then(data => {
-                                //console.log(data)
-                                if (data) {
-                                    const formattedData = data.map(examen => ({
-                                        ...examen,
-                                        fecha: cambiarFormatoFecha(examen.fecha),
-                                    }));
-                                    setExamenes(formattedData);
-                                }
-
-                                setAulaExamen('');
-                                setCantidadExamen('');
-                                setFechaExamen('');
-                                setTurnoExamen('');
-                            })
-
-                    })
-                } else if (response.status === 403) {
-                    Swal.fire({
-                        title: 'Credenciales caducadas',
-                        icon: 'info',
-                        text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion'
-                    }).then((result) => {
-                        handleSession()
-                    })
-                }
+    const handleSearchExamen = () => {
+        if (fechaExamenSearch && turnoExamenSearch && aulaExamenSearch) {
+            setLoadingSearchExamen(true)
+            const examenSearch = {
+                fecha: fechaExamenSearch,
+                turno: turnoExamenSearch,
+                aula: aulaExamenSearch
+            }
+            fetch(`${HOST}/api/examenes/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(examenSearch),
             })
+                .then(response => {
+                    if (response.status === 200) {
+                        setLoadingSearchExamen(false)
+                        return response.json();
+                    } else if (response.status === 403) {
+                        setLoadingSearchExamen(false)
+                        Swal.fire({
+                            title: 'Credenciales caducadas',
+                            icon: 'info',
+                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion'
+                        }).then((result) => {
+                            handleSession()
+                        })
+                    }
+                })
+                .then(data => {
+                    setIdExamenUpdate(data.id_examen)
+                    setFechaExamenUpdate(data.fecha)
+                    setTurnoExamenUpdate(data.turno)
+                    setAulaExamenUpdate(data.aula)
+                    setEstadoExamenUpdate(data.estado)
+                    setCantidadExamenUpdate(data.cantidad_inscriptos)
+                })
+        } else {
+            Swal.fire({
+                title: 'Campos imcompletos',
+                icon: 'info',
+                text: 'Faltan campos por completar para iniciar una busqueda'
+            })
+        }
+    }
+
+    const handleSearchAspirante = () => {
+        if (dniSearch) {
+            setLoadingSearchAspirante(true)
+            fetch(`${HOST}/api/aspirantes/${dniSearch}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            })
+                .then(response => {
+                    if (response.status === 200) {
+                        setLoadingSearchAspirante(false)
+                        return response.json();
+                    } else if (response.status === 403) {
+                        Swal.fire({
+                            title: 'Credenciales caducadas',
+                            icon: 'info',
+                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion'
+                        }).then((result) => {
+                            handleSession()
+                        })
+                    }
+                })
+                .then(data => {
+                    setNombre(data[0].nombre)
+                    setApellido(data[0].apellido)
+                    setGenero(data[0].genero)
+                    setPresencia(data[0].presencia)
+                    setNota(data[0].nota)
+                    setExamenIdAsp(data[0].examen_id)
+                })
+        } else {
+            setLoadingSearchAspirante(false)
+            Swal.fire({
+                title: 'Campos imcompletos',
+                icon: 'info',
+                text: 'Faltan campos por completar para iniciar una busqueda'
+            })
+        }
+    }
+
+    const handleUpdateExamen = () => {
+        if (idExamenUpdate && fechaExamenUpdate && turnoExamenUpdate && aulaExamenUpdate && estadoExamenUpdate && cantidadExamenUpdate) {
+            setLoadinUpdateExamen(true)
+            const examenUpdate = {
+                id_examen: idExamenUpdate,
+                fecha: fechaExamenUpdate,
+                turno: turnoExamenUpdate,
+                aula: aulaExamenUpdate,
+                estado: estadoExamenUpdate,
+                cantidad_inscriptos: cantidadExamenUpdate,
+            }
+
+            fetch(`${HOST}/api/examenes/update/${idExamenUpdate}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(examenUpdate),
+            })
+                .then(response => {
+                    if (response.status === 200) {
+                        setLoadinUpdateExamen(false)
+                        Swal.fire({
+                            title: 'Examen actualizado',
+                            icon: 'success',
+                            text: 'Examen actualizado correctamente',
+                            confirmButtonText: 'Aceptar'
+                        }).then((result) => {
+                            fetch(`${HOST}/api/examenes/estado`, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                credentials: 'include',
+                            })
+                                .then(response => {
+                                    if (response.status === 200) {
+                                        return response.json();
+                                    } else if (response.status === 403) {
+                                        Swal.fire({
+                                            title: 'Credenciales caducadas',
+                                            icon: 'info',
+                                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
+                                        }).then((result) => {
+                                            handleSession()
+
+                                        })
+                                    }
+                                })
+                                .then(data => {
+                                    if (data) {
+                                        const formattedData = data.map(examen => ({
+                                            ...examen,
+                                            fecha: cambiarFormatoFecha(examen.fecha),
+                                        }));
+                                        setExamenes(formattedData);
+                                    }
+
+                                    setAulaExamenSearch('');
+                                    setFechaExamenSearch('');
+                                    setTurnoExamenSearch('');
+                                    setFechaExamenUpdate('')
+
+                                    setIdExamenUpdate('')
+                                    setFechaExamenUpdate('')
+                                    setTurnoExamenUpdate('')
+                                    setAulaExamenUpdate('')
+                                    setEstadoExamenUpdate('')
+                                    setCantidadExamenUpdate('')
+                                })
+
+                        })
+                    } else if (response.status === 403) {
+                        setLoadinUpdateExamen(false)
+                        Swal.fire({
+                            title: 'Credenciales caducadas',
+                            icon: 'info',
+                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion'
+                        }).then((result) => {
+                            handleSession()
+                        })
+                    }
+                })
+        } else {
+            setLoadinUpdateExamen(false)
+            Swal.fire({
+                title: 'Campos imcompletos',
+                icon: 'info',
+                text: 'Faltan campos por completar para actualizar el examen'
+            })
+        }
+    }
+
+    const handleUpdateAspirante = () => {
+        if (nombre, apellido, genero, presencia, nota, examenIdAsp, dniSearch) {
+            setLoadinUpdateAspirante(true)
+            const aspiranteUpdate = {
+                dni: dniSearch,
+                nombre,
+                apellido,
+                genero,
+                presencia,
+                nota,
+                examen_id: examenIdAsp
+            }
+
+            fetch(`${HOST}/api/aspirantes/update/${dniSearch}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(aspiranteUpdate),
+            })
+                .then(response => {
+                    if (response.status === 200) {
+                        setLoadinUpdateAspirante(false)
+                        setDniSearch('')
+                        setNombre('')
+                        setApellido('')
+                        setGenero('')
+                        setPresencia('')
+                        setNota('')
+                        setExamenIdAsp('')
+
+                        Swal.fire({
+                            title: 'Aspirante actualizado',
+                            icon: 'success',
+                            text: 'Aspirante actualizado correctamente',
+                            confirmButtonText: 'Aceptar'
+                        })
+                        return response.json();
+                    } else if (response.status === 403) {
+                        setLoadinUpdateAspirante(false)
+                        Swal.fire({
+                            title: 'Credenciales caducadas',
+                            icon: 'info',
+                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
+                        }).then((result) => {
+                            handleSession()
+                        })
+                    }
+                })
+        } else {
+            setLoadinUpdateAspirante(false)
+            Swal.fire({
+                title: 'Campos imcompletos',
+                icon: 'info',
+                text: 'Faltan campos por completar para actualizar el aspirante'
+            })
+        }
+    }
+
+    const handleCargaExamen = () => {
+        if (fechaExamen && turnoExamen && aulaExamen && cantidadExamen) {
+            setLoadinCargaExamen(true)
+
+            const examenACargar = {
+                fecha: fechaExamen,
+                turno: turnoExamen,
+                aula: aulaExamen,
+                cantidad_inscriptos: cantidadExamen,
+            }
+
+            fetch(`${HOST}/api/examenes/examen`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(examenACargar),
+            })
+                .then(response => {
+                    if (response.status === 200) {
+                        Swal.fire({
+                            title: 'Examen cargado',
+                            icon: 'success',
+                            text: 'Examen cargado correctamente',
+                            confirmButtonText: 'Aceptar'
+                        }).then((result) => {
+                            setLoadinCargaExamen(false)
+                            fetch(`${HOST}/api/examenes/estado`, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                credentials: 'include',
+                            })
+                                .then(response => {
+                                    if (response.status === 200) {
+                                        return response.json();
+                                    } else if (response.status === 403) {
+                                        Swal.fire({
+                                            title: 'Credenciales caducadas',
+                                            icon: 'info',
+                                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
+                                        }).then((result) => {
+                                            handleSession()
+
+                                        })
+                                    }
+                                })
+                                .then(data => {
+                                    //console.log(data)
+                                    if (data) {
+                                        const formattedData = data.map(examen => ({
+                                            ...examen,
+                                            fecha: cambiarFormatoFecha(examen.fecha),
+                                        }));
+                                        setExamenes(formattedData);
+                                    }
+
+                                    setAulaExamen('');
+                                    setCantidadExamen('');
+                                    setFechaExamen('');
+                                    setTurnoExamen('');
+                                })
+
+                        })
+                    } else if (response.status === 403) {
+                        setLoadinCargaExamen(false)
+                        Swal.fire({
+                            title: 'Credenciales caducadas',
+                            icon: 'info',
+                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion'
+                        }).then((result) => {
+                            handleSession()
+                        })
+                    }
+                })
+        } else {
+            setLoadinCargaExamen(false)
+            Swal.fire({
+                title: 'Campos faltantes',
+                icon: 'info',
+                text: 'Faltan campos por completar',
+            })
+        }
     }
 
     useEffect(() => {
@@ -542,7 +833,21 @@ const Carga = () => {
             <h1 className='text-[#005CA2] font-bold text-2xl'>CARGA</h1>
             <div className='flex flex-col justify-center items-center md:flex-row gap-4'>
                 <div className='mt-6 min-h-60 w-full md:w-1/2 flex flex-col items-center justify-center bg-[#f0f0f0] rounded-md py-4'>
-                    <h2 className='text-lg text-[#005CA2] mb-4 text-center w-full'>Carga aula, grupo y cantidad</h2>
+                    <div className='flex flex-row items-center'>
+                        <h2 className='text-lg text-[#005CA2] pb-4 text-center w-full'>Carga aula, grupo y cantidad</h2>
+                        <CiCircleInfo className='text-lg text-[#005CA2] mb-3 ml-2' data-tooltip-id="tooltip1" data-tooltip-html="
+                        <div style='max-width: 170px; text-align: center; background-color: #005CA2; color: white; border-radius: 8px;'>
+                            <p>
+                                En esta sección se cargan todos los atributos de cada examen distinguiéndolos por sus atributos únicos: fecha, turno y aula.
+                            </p>
+                            </div>"/>
+                        <Tooltip
+                            id="tooltip1"
+                            events={['click']}
+                            place='right'
+                            style={{ backgroundColor: "#005CA2" }}
+                        />
+                    </div>
                     <div className='flex flex-col justify-center items-center gap-4 w-full'>
                         <div className='flex flex-row'>
                             <div className='flex justify-end w-16'>
@@ -580,11 +885,25 @@ const Carga = () => {
                             </div>
                             <input type="number" value={cantidadExamen} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='cantidadExamen' onChange={(e) => handleInputExamen(e)} />
                         </div>
-                        <button className='bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold' onClick={(handleCargaExamen)}>CARGAR</button>
+                        <button className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingCargaExamen ? 'animate-pulse' : 'animate-none'}`} onClick={(handleCargaExamen)}>CARGAR</button>
                     </div>
                 </div>
                 <div className='mt-6 min-h-60 max-h-60 w-full md:w-1/2 flex flex-col items-center justify-center bg-[#f0f0f0] rounded-md py-4'>
-                    <h2 className='text-lg text-[#005CA2] mb-2'>Carga aspirantes</h2>
+                    <div className='flex flex-row items-center justify-center'>
+                        <h2 className='text-lg text-[#005CA2] mb-2'>Carga aspirantes</h2>
+                        <CiCircleInfo className='text-lg text-[#005CA2] mb-1 ml-2' data-tooltip-id="tooltip2" data-tooltip-html="
+                        <div style='max-width: 170px; text-align: center; background-color: #005CA2; color: white; border-radius: 8px;'>
+                            <p>
+                                El archivo a cargar debe ser un archivo .xlsx con las siguientes columnas en este orden: dni, apellido, nombre, genero, aula, turno, fecha
+                            </p>
+                            </div>"/>
+                        <Tooltip
+                            id="tooltip2"
+                            events={['click']}
+                            place='right'
+                            style={{ backgroundColor: "#005CA2" }}
+                        />
+                    </div>
                     <div className='flex flex-row  items-center justify-center'>
                         <div className='flex justify-center items-center w-full'>
                             <label htmlFor="" className=''>Archivo aspirantes:</label>
@@ -615,12 +934,26 @@ const Carga = () => {
                             </tbody>
                         </table>
                     </div>
-                    <button className='bg-[#005CA2] mt-1 text-white w-fit px-10 py-1 rounded-md font-semibold' onClick={handleUploadAspirantes}>CARGAR ASPIRANTES</button>
+                    <button className={`bg-[#005CA2] mt-1 text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingCargaAspirantes ? 'animate-pulse' : 'animate-none'}`} onClick={handleUploadAspirantes}>CARGAR ASPIRANTES</button>
                 </div>
             </div>
             <div className='flex flex-col justify-center items-center md:flex-row gap-4 mt-2'>
                 <div className='mt-6 min-h-60 w-full md:w-1/2 flex flex-col items-center justify-center bg-[#f0f0f0] rounded-md py-4'>
-                    <h2 className='text-lg text-[#005CA2] mb-4'>Carga notas</h2>
+                    <div className='flex flex-row justify-center items-center'>
+                        <h2 className='text-lg text-[#005CA2] mb-4'>Carga notas</h2>
+                        <CiCircleInfo className='text-lg text-[#005CA2] mb-3 ml-2' data-tooltip-id="tooltip2" data-tooltip-html="
+                        <div style='max-width: 170px; text-align: center; background-color: #005CA2; color: white; border-radius: 8px;'>
+                            <p>
+                                El archivo de notas a cargar es el formato estadar descargado desde zip-grade. Ademas se debe completar los parametros para identificar al examen unico.
+                            </p>
+                            </div>"/>
+                        <Tooltip
+                            id="tooltip2"
+                            events={['click']}
+                            place='right'
+                            style={{ backgroundColor: "#005CA2" }}
+                        />
+                    </div>
                     <div className='flex flex-col justify-center items-center gap-4 w-full'>
                         <div className='flex flex-row'>
                             <div className='flex justify-end w-16'>
@@ -658,7 +991,7 @@ const Carga = () => {
                             </div>
                             <input type="file" className='w-full px-2 bg-white' onChange={(e) => handleFileCargaUpload(e)} />
                         </div>
-                        <button type="submit" className='bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold' onClick={handleUploadResultados}>CARGAR</button>
+                        <button type="submit" className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingCargaNotas ? 'animate-pulse' : 'animate-none'}`} onClick={handleUploadResultados}>CARGAR</button>
                     </div>
                 </div>
                 <div className='mt-6 min-h-60 max-h-60 w-full md:w-1/2 flex flex-row flex-wrap items-center justify-center bg-[#f0f0f0] rounded-md py-4 gap-4 overflow-scroll'>
@@ -689,6 +1022,7 @@ const Carga = () => {
                     </table>
                 </div>
             </div>
+            {/* ESTADO EXAMENES */}
             <div className='mt-6 min-h-60 max-h-60 w-full flex flex-row flex-wrap items-center justify-center bg-[#005CA2]/75 rounded-md py-4 gap-4 overflow-scroll'>
                 {
                     examenes.map((examen) => {
@@ -707,10 +1041,10 @@ const Carga = () => {
                 }
             </div>
             {/* MODIFICAR EXAMEN */}
-            <div className='mt-6 min-h-60 max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
+            <div className='mt-6 min-h-60 md:max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
                 <h2 className='text-lg text-[#005CA2] mb-4 text-left w-full pl-3'>Modificar examen</h2>
-                <div className='w-full h-auto flex flex-row'>
-                    <div className='w-1/4 h-auto flex flex-col gap-10 justify-center items-start border-r-[1px] border-gray-400'>
+                <div className='w-full h-auto flex flex-col md:flex-row'>
+                    <div className='w-full md:w-1/4 h-auto flex flex-col gap-5 justify-center items-center md:items-start border-b-[1px] md:border-b-0 md:border-r-[1px] border-gray-400 mb-4 pb-6 md:pb-0 md:mb-0'>
                         <div className='flex flex-row'>
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Fecha:</label>
@@ -741,23 +1075,26 @@ const Carga = () => {
                                 <option value="AULA 04">Aula 04</option>
                             </select>
                         </div>
+                        <div className='flex flex-row justify-center items-center w-full'>
+                            <button className={`bg-[#005CA2] text-white w-fit px-10 py-[1px] rounded-md font-semibold ${loadingSearchExamen ? 'animate-pulse' : 'animate-none'}`} onClick={handleSearchExamen}>Buscar</button>
+                        </div>
                     </div>
-                    <div className='w-3/4 h-auto flex flex-row justify-center items-center ml-8 gap-6'>
+                    <div className='w-full md:w-3/4 h-auto flex flex-col md:flex-row justify-center items-center md:ml-8 gap-5'>
                         <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
-                                    <label htmlFor="" className='pr-2'>Id examen:</label>
+                                <div className='flex justify-end w-16 md:w-32'>
+                                    <label htmlFor="" className='pr-2 text-nowrap'>Id examen:</label>
                                 </div>
-                                <input type="text" value={idExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='idExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
+                                <input type="text" value={idExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='idExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} disabled />
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Fecha:</label>
                                 </div>
                                 <input type="date" value={fechaExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='fechaExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Turno:</label>
                                 </div>
                                 <select name="turnoExamenUpdate" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={turnoExamenUpdate} onChange={(e) => handleInputExamenUpdate(e)}>
@@ -771,7 +1108,7 @@ const Carga = () => {
                         </div>
                         <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Aula:</label>
                                 </div>
                                 <select name="aulaExamenUpdate" id="" className='w-36 px-2 bg-white border border-gray-400 rounded-md' value={aulaExamenUpdate} onChange={(e) => handleInputExamenUpdate(e)}>
@@ -783,52 +1120,55 @@ const Carga = () => {
                                 </select>
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Estado:</label>
                                 </div>
                                 <input type="text" value={estadoExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='estadoExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
-                                    <label htmlFor="" className='pr-2'>Cantidad inscriptos:</label>
+                                <div className='flex justify-end w-16 md:w-32'>
+                                    <label htmlFor="" className='pr-2 text-nowrap'>Cantidad inscriptos:</label>
                                 </div>
                                 <input type="text" value={cantidadExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='cantidadExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
                             </div>
                         </div>
                         <div className='w-1/3 flex justify-center'>
-                            <button className='bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold'>ACTUALIZAR</button>
+                            <button className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingUpdateExamen ? 'animate-pulse' : 'animate-none'}`} onClick={handleUpdateExamen}>ACTUALIZAR</button>
                         </div>
                     </div>
                 </div>
             </div>
             {/* MODIFICAR ASPIRANTE */}
-            <div className='mt-6 min-h-60 max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
+            <div className='mt-6 min-h-60 md:max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
                 <h2 className='text-lg text-[#005CA2] mb-4 text-left w-full pl-3'>Modificar aspirante</h2>
-                <div className='w-full h-auto flex flex-row'>
-                    <div className='w-1/4 h-auto flex flex-col gap-10 justify-center items-start border-r-[1px] border-gray-400'>
-                        <div className='flex flex-row'>
+                <div className='w-full h-auto flex flex-col md:flex-row'>
+                    <div className='w-full md:w-1/4 flex flex-col gap-5 justify-center items-center md:items-start border-b-[1px] md:border-b-0 md:border-r-[1px] border-gray-400 mb-8 md:mb-0 pb-6 md:pb-0'>
+                        <div className='flex flex-row justify-center'>
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>DNI:</label>
                             </div>
-                            <input type="date" value={dniSearch} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                            <input type="text" value={dniSearch} className={`w-36 px-2 bg-white border border-gray-400 rounded-md ${loadingSearchAspirante ? 'animate-pulse': 'animate-none'}`} name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                        </div>
+                        <div className='flex flex-row justify-center items-center w-full'>
+                            <button className='bg-[#005CA2] text-white w-fit px-10 py-[1px] rounded-md font-semibold' onClick={handleSearchAspirante}>Buscar</button>
                         </div>
                     </div>
-                    <div className='w-3/4 h-auto flex flex-row justify-center items-center ml-8 gap-6'>
-                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
+                    <div className='w-full md:w-3/4 h-auto flex flex-col md:flex-row justify-center items-center md:ml-8 gap-4'>
+                        <div className='md:w-1/3 w-full flex flex-col gap-4 items-center justify-center h-full'>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Nombre:</label>
                                 </div>
                                 <input type="text" value={nombre} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='nombre' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Apellido:</label>
                                 </div>
                                 <input type="text" value={apellido} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='apellido' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Genero:</label>
                                 </div>
                                 <select name="genero" id="" className='rounded-md min-w-36 px-2 bg-white border border-gray-400' value={genero} onChange={(e) => handleInputAspiranteUpdate(e)}>
@@ -838,33 +1178,33 @@ const Carga = () => {
                                 </select>
                             </div>
                         </div>
-                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
+                        <div className='md:w-1/3 w-full flex flex-col gap-4 items-center justify-center h-full'>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Presencia:</label>
                                 </div>
                                 <input type="text" value={presencia} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='presencia' onChange={(e) => handleInputExamen(e)} />
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
+                                <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Nota:</label>
                                 </div>
                                 <input type="text" value={nota} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='nota' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
                             <div className='flex flex-row'>
-                                <div className='flex justify-end w-32'>
-                                    <label htmlFor="" className='pr-2'>Examen id:</label>
+                                <div className='flex justify-end w-16 md:w-32'>
+                                    <label htmlFor="" className='pr-2 text-nowrap'>Examen id:</label>
                                 </div>
                                 <input type="text" value={examenIdAsp} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='examenIdAsp' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
                         </div>
-                        <div className='w-1/3 flex justify-center'>
-                            <button className='bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold'>ACTUALIZAR</button>
+                        <div className='md:w-1/3 w-full flex justify-center'>
+                            <button className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingUpdateAspirante ? 'animate-pulse':'animate-none'}`} onClick={handleUpdateAspirante}>ACTUALIZAR</button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 

@@ -9,7 +9,6 @@ import {
     LineElement,
     PointElement,
     Title,
-    Tooltip,
     Legend,
     Filler,
 } from "chart.js/auto";
@@ -17,6 +16,8 @@ import Swal from 'sweetalert2';
 import { ContextConfig } from '../context/ContextConfig';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { CiCircleInfo } from "react-icons/ci";
+import { Tooltip } from 'react-tooltip';
 
 ChartJS.register(
     CategoryScale,
@@ -25,7 +26,6 @@ ChartJS.register(
     LineElement,
     PointElement,
     Title,
-    Tooltip,
     Legend,
     Filler,
     ChartDataLabels
@@ -36,7 +36,7 @@ const Estadisticas = () => {
     const [loading, setLoading] = useState(false)
 
     const { HOST, handleSession } = useContext(ContextConfig)
-    const [fecha, setFecha] = useState('')
+    const [fecha, setFecha] = useState(`${new Date().getFullYear()}-${(new Date().getMonth()) + 1}-${new Date().getDay()}`)
     const [turno, setTurno] = useState('')
     const [aula, setAula] = useState('')
     const [genero, setGenero] = useState('')
@@ -153,12 +153,12 @@ const Estadisticas = () => {
                 display: true,
                 color: 'white',
                 font: {
-                    weight: 'bold', 
-                    size: 17, 
+                    weight: 'bold',
+                    size: 17,
                 },
                 formatter: (value) => {
                     if (value < 5) {
-                        return ''; 
+                        return '';
                     }
 
                     return `${value}`;
@@ -377,7 +377,7 @@ const Estadisticas = () => {
     };
 
     const borrarFiltros = () => {
-        setFecha('')
+        setFecha(`${new Date().getFullYear()}-${(new Date().getMonth()) + 1}-${new Date().getDay()}`)
         setTurno('')
         setAula('')
         setGenero('')
@@ -471,19 +471,34 @@ const Estadisticas = () => {
                 .then(data => {
                     const corte = parseInt(data.corte)
                     const informacion = data.aspirantes;
+                    const procesados = new Set();
 
-                    // console.log(informacion)
+                    // console.log("Informacion: ", informacion)
 
-                    informacion.map(info => {
-                        if (info.examen_id !== ultimoExamenId) {
+                    informacion.forEach(info => {
+                        if (!procesados.has(info.examen_id)) {
+                            //console.log("Ingreso al if principal");
+
                             if (!resumenAula[info.aula]) {
                                 resumenAula[info.aula] = info.cantidad_inscriptos;
                             } else {
                                 resumenAula[info.aula] += info.cantidad_inscriptos;
                             }
 
-                            ultimoExamenId = info.examen_id
+                            procesados.add(info.examen_id); // Marcamos el examen_id como procesado
                         }
+
+                        // if (info.examen_id !== ultimoExamenId) {
+                        //     console.log("Ingreso al if principal")
+                        //     if (!resumenAula[info.aula]) {
+                        //         resumenAula[info.aula] = info.cantidad_inscriptos;
+                        //     } 
+                        //     else {
+                        //         resumenAula[info.aula] += info.cantidad_inscriptos;
+                        //     }
+
+                        //     ultimoExamenId = info.examen_id
+                        // }
 
                         //APROBADOS Y DESAPROBADOS
                         if (info.nota >= corte) {
@@ -595,10 +610,13 @@ const Estadisticas = () => {
                         }
                     }
 
-                    // console.log(ausentesAulaAux)
+                    //console.log("Resumen aula: ", resumenAula)
 
                     const totalInscriptos = Object.values(resumenAula).reduce((acc, inscriptos) => acc + inscriptos, 0);
+                    // const totalInscriptos = informacion.length
                     ausentes = totalInscriptos - aprobados - desaprobados
+
+                    //console.log("Total inscriptos: ", totalInscriptos)
 
                     let aprobadosAulaAux = [aprobaula01, aprobaula02, aprobaula03, aprobaula04]
                     let desaprobadosAulaAux = [desaprobaula01, desaprobaula02, desaprobaula03, desaprobaula04]
@@ -669,7 +687,7 @@ const Estadisticas = () => {
                             </select>
                         </div>
                         <div className='flex justify-center items-center flex-row'>
-                            <div className='flex justify-end w-28 mr-4'>
+                            <div className='flex justify-end w-28 ml-3'>
                                 <label htmlFor="" className=''>Ingrese genero:</label>
                             </div>
                             <select name="genero" id="" className='rounded-md min-w-36 px-2' value={genero} onChange={(e) => handleChangeInput(e)}>
@@ -677,7 +695,20 @@ const Estadisticas = () => {
                                 <option value="M">Masculinos</option>
                                 <option value="F">Femeninas</option>
                             </select>
+                            <CiCircleInfo className='text-lg text-[#005CA2] ml-2' data-tooltip-id="tooltip3" data-tooltip-html="
+                                                    <div style='max-width: 170px; text-align: center; background-color: #005CA2; color: white; border-radius: 8px;'>
+                                                        <p>
+                                                            Al usar este filtro se ignora el número de ausentes  ya que la misma se la toma de la poblacion total
+                                                        </p>
+                                                        </div>"/>
+                            <Tooltip
+                                id="tooltip3"
+                                events={['click']}
+                                place='right'
+                                style={{ backgroundColor: "#005CA2" }}
+                            />
                         </div>
+
                     </div>
                 </div>
                 <div className='lg:w-1/3 w-full flex flex-col md:flex-row gap-3 justify-center items-center'>
