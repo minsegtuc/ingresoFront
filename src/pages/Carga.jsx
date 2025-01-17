@@ -10,6 +10,7 @@ const Carga = () => {
     const { HOST, handleSession } = useContext(ContextConfig);
     const [examenes, setExamenes] = useState([]);
     const [aspirantesFile, setAspirantesFile] = useState([]);
+    const [preguntasFile, setPreguntasFile] = useState([])
     const [examenFile, setExamenFile] = useState([]);
 
     //PARA CREAR UN EXAMEN
@@ -92,7 +93,6 @@ const Carga = () => {
     }
 
     const handleFileCargaUpload = (e) => {
-        //console.log("Ingreso a la funcion")
         setExamenFile(null);
         const file = e.target.files[0];
         const reader = new FileReader();
@@ -108,6 +108,30 @@ const Carga = () => {
 
             const bodyData = jsonData.slice(1);
 
+            const startColumnIndex = 10; 
+            const endColumnIndex = 29; 
+
+            const preguntas = [];
+
+            bodyData.forEach((row) => {
+                row.slice(startColumnIndex, endColumnIndex + 1).forEach((value, index) => {
+                    const questionKey = `Q${index + 1}`;
+                    const currentIndex = preguntas.findIndex(q => q.numero === questionKey);
+
+                    if (currentIndex === -1) {
+                        preguntas.push({
+                            numero: questionKey,
+                            correcta: value === 1 ? 1 : 0,
+                            incorrecta: value === 0 ? 1 : 0,
+                        });
+                    } else {
+                        if (value === 1) preguntas[currentIndex].correcta += 1;
+                        if (value === 0) preguntas[currentIndex].incorrecta += 1;
+                    }
+                });
+            });
+
+
             const resultados = bodyData.map((resultado) => {
                 return {
                     dni: resultado[2],
@@ -117,6 +141,7 @@ const Carga = () => {
                 }
             })
 
+            setPreguntasFile(preguntas);
             setExamenFile(resultados);
         }
 
@@ -337,6 +362,22 @@ const Carga = () => {
                         console.error("Error: examen_id no encontrado");
                         throw new Error("No se encontró el examen_id");
                     }
+
+                    // preguntasFile.map(pregunta => {
+                    //     const preguntaSubir = {
+                    //         ...pregunta,
+                    //         examen_id
+                    //     }
+
+                    //     fetch(`${HOST}/api/preguntas/pregunta`, {
+                    //         method: 'PUT',
+                    //         headers: {
+                    //             'Content-Type': 'application/json',
+                    //         },
+                    //         credentials: 'include',
+                    //         body: JSON.stringify(preguntaSubir),
+                    //     });
+                    // })                    
 
                     // console.log(`Examen ID encontrado: ${examen_id}`);
                     const examenResponse = await fetch(`${HOST}/api/examenes/update/${examen_id}`, {
@@ -1147,7 +1188,7 @@ const Carga = () => {
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>DNI:</label>
                             </div>
-                            <input type="text" value={dniSearch} className={`w-36 px-2 bg-white border border-gray-400 rounded-md ${loadingSearchAspirante ? 'animate-pulse': 'animate-none'}`} name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                            <input type="text" value={dniSearch} className={`w-36 px-2 bg-white border border-gray-400 rounded-md ${loadingSearchAspirante ? 'animate-pulse' : 'animate-none'}`} name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
                         </div>
                         <div className='flex flex-row justify-center items-center w-full'>
                             <button className='bg-[#005CA2] text-white w-fit px-10 py-[1px] rounded-md font-semibold' onClick={handleSearchAspirante}>Buscar</button>
@@ -1199,7 +1240,7 @@ const Carga = () => {
                             </div>
                         </div>
                         <div className='md:w-1/3 w-full flex justify-center'>
-                            <button className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingUpdateAspirante ? 'animate-pulse':'animate-none'}`} onClick={handleUpdateAspirante}>ACTUALIZAR</button>
+                            <button className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingUpdateAspirante ? 'animate-pulse' : 'animate-none'}`} onClick={handleUpdateAspirante}>ACTUALIZAR</button>
                         </div>
                     </div>
                 </div>

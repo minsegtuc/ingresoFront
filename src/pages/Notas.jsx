@@ -188,7 +188,7 @@ const Notas = () => {
                     <BsSearch className="text-[#757873]" />
                 </div>
             </div>
-            <div className='w-full mt-6' id='componente-exportar'>
+            <div className='w-full mt-6 overflow-x-scroll'>
                 {
                     isLoading ?
                         <div className='w-full h-full flex justify-center items-center'>
@@ -202,10 +202,10 @@ const Notas = () => {
                                     <th className='text-center'>DNI</th>
                                     <th className='text-center'>Apellido</th>
                                     <th className='text-center'>Nombre</th>
-                                    <th className='text-center'>Nota</th>
-                                    <th className='text-center'>Genero</th>
-                                    <th className='text-center'>Turno</th>
-                                    <th className='text-center'>Aula</th>
+                                    <th className='text-center px-2'>Nota</th>
+                                    <th className='text-center px-2'>Genero</th>
+                                    <th className='text-center px-2'>Turno</th>
+                                    <th className='text-center px-4'>Aula</th>
                                 </tr>
                             </thead>
                             <tbody>
