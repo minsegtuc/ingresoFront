@@ -108,8 +108,8 @@ const Carga = () => {
 
             const bodyData = jsonData.slice(1);
 
-            const startColumnIndex = 10; 
-            const endColumnIndex = 29; 
+            const startColumnIndex = 10;
+            const endColumnIndex = 29;
 
             const preguntas = [];
 
@@ -463,7 +463,7 @@ const Carga = () => {
 
     const handleInputExamenUpdate = (e) => {
         const { name, value } = e.target;
-
+        // console.log("Name y value: " , name, value)
         if (name === 'fechaExamenSearch') {
             setFechaExamenSearch(value);
         } else if (name === 'turnoExamenSearch') {
@@ -596,7 +596,15 @@ const Carga = () => {
     }
 
     const handleUpdateExamen = () => {
-        if (idExamenUpdate && fechaExamenUpdate && turnoExamenUpdate && aulaExamenUpdate && estadoExamenUpdate && cantidadExamenUpdate) {
+        //console.log(idExamenUpdate, fechaExamenUpdate, turnoExamenUpdate, aulaExamenUpdate, estadoExamenUpdate, cantidadExamenUpdate)
+        if (
+            String(idExamenUpdate).trim() !== '' &&
+            String(fechaExamenUpdate).trim() !== '' &&
+            String(turnoExamenUpdate).trim() !== '' &&
+            String(aulaExamenUpdate).trim() !== '' &&
+            String(estadoExamenUpdate).trim() !== '' &&
+            String(cantidadExamenUpdate).trim() !== ''
+        ) {
             setLoadinUpdateExamen(true)
             const examenUpdate = {
                 id_examen: idExamenUpdate,
@@ -691,7 +699,7 @@ const Carga = () => {
 
     const handleUpdateAspirante = () => {
         if (nombre, apellido, genero, presencia, nota, examenIdAsp, dniSearch) {
-            setLoadinUpdateAspirante(true)
+            setLoadingUpdateAspirante(true)
             const aspiranteUpdate = {
                 dni: dniSearch,
                 nombre,
@@ -712,7 +720,7 @@ const Carga = () => {
             })
                 .then(response => {
                     if (response.status === 200) {
-                        setLoadinUpdateAspirante(false)
+                        setLoadingUpdateAspirante(false)
                         setDniSearch('')
                         setNombre('')
                         setApellido('')
@@ -868,6 +876,10 @@ const Carga = () => {
                 }
             })
     }, [])
+
+    useEffect(() => {
+        console.log(preguntasFile)
+    }, [preguntasFile])
 
     return (
         <div className='text-xs flex flex-col w-full h-full lg:relative lg:left-52'>
@@ -1068,13 +1080,13 @@ const Carga = () => {
                 {
                     examenes.map((examen) => {
                         return (
-                            <div className={`flex rounded-md w-28 h-auto flex-col justify-center items-center text-black px-2 py-1 ${examen.estado === 0 ? 'bg-[#f0f0f0]' : 'bg-green-300'}`} key={examen.id}>
+                            <div className={`flex rounded-md w-28 h-auto flex-col justify-center items-center text-black px-2 py-1 ${examen.estado === 0 ? 'bg-[#f0f0f0]' : 'bg-green-300'}`} key={examen.id_examen}>
+                                <p className='text-center font-bold'>{examen.id_examen}</p>
                                 <p className='text-center'>{examen.fecha}</p>
                                 <div className='flex flex-row'>
                                     <p className='text-center'>{examen.aula} - </p>
                                     <p className='text-center'>{examen.turno}</p>
                                 </div>
-
                                 <p className='text-center'>{examen.cantidad_inscriptos}</p>
                             </div>
                         )
