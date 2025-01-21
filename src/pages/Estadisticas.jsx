@@ -108,7 +108,7 @@ const Estadisticas = () => {
     };
 
     const dataAulas = {
-        labels: ['AULA 01', 'AULA 02', 'AULA 03', 'AULA 04'],
+        labels: ['AULA 01', 'AULA 02', 'AULA 03', 'AULA 04', 'AULA 05'],
         datasets: [
             {
                 label: 'Aprobados',
@@ -409,10 +409,12 @@ const Estadisticas = () => {
             let aprobaula02 = 0;
             let aprobaula03 = 0;
             let aprobaula04 = 0
+            let aprobaula05 = 0
             let desaprobaula01 = 0;
             let desaprobaula02 = 0;
             let desaprobaula03 = 0;
             let desaprobaula04 = 0;
+            let desaprobaula05 = 0;
 
             let pregunta1 = 0;
             let pregunta2 = 0;
@@ -517,6 +519,8 @@ const Estadisticas = () => {
                                 aprobaula03++;
                             } else if (info.aula === "AULA 04") {
                                 aprobaula04++;
+                            } else if (info.aula === "AULA 05") {
+                                aprobaula05++;
                             }
                         } else {
                             if (info.aula === "AULA 01") {
@@ -527,6 +531,8 @@ const Estadisticas = () => {
                                 desaprobaula03++;
                             } else if (info.aula === "AULA 04") {
                                 desaprobaula04++;
+                            } else if (info.aula === "AULA 05") {
+                                desaprobaula05++;
                             }
                         }
 
@@ -590,7 +596,7 @@ const Estadisticas = () => {
                         }
                     })
 
-                    const aulas = ["AULA 01", "AULA 02", "AULA 03", "AULA 04"];
+                    const aulas = ["AULA 01", "AULA 02", "AULA 03", "AULA 04", "AULA 05"];
                     const ausentesAulaAux = [];
 
                     for (let i = 0; i < aulas.length; i++) {
@@ -604,6 +610,8 @@ const Estadisticas = () => {
                                 ausentesAulaAux.push(resumenAula[aula] - aprobaula03 - desaprobaula03);
                             } else if (aula === "AULA 04") {
                                 ausentesAulaAux.push(resumenAula[aula] - aprobaula04 - desaprobaula04);
+                            } else if (aula === "AULA 05") {
+                                ausentesAulaAux.push(resumenAula[aula] - aprobaula05 - desaprobaula05);
                             }
                         } else {
                             ausentesAulaAux.push(0);
@@ -618,8 +626,8 @@ const Estadisticas = () => {
 
                     //console.log("Total inscriptos: ", totalInscriptos)
 
-                    let aprobadosAulaAux = [aprobaula01, aprobaula02, aprobaula03, aprobaula04]
-                    let desaprobadosAulaAux = [desaprobaula01, desaprobaula02, desaprobaula03, desaprobaula04]
+                    let aprobadosAulaAux = [aprobaula01, aprobaula02, aprobaula03, aprobaula04, aprobaula05]
+                    let desaprobadosAulaAux = [desaprobaula01, desaprobaula02, desaprobaula03, desaprobaula04, desaprobaula05]
 
                     let preguntasAux = [pregunta1, pregunta2, pregunta3, pregunta4, pregunta5, pregunta6, pregunta7, pregunta8, pregunta9, pregunta10, pregunta11, pregunta12, pregunta13, pregunta14, pregunta15, pregunta16, pregunta17, pregunta18, pregunta19, pregunta20]
                     let aprobadosGeneroAux = [masculinosAprobados, femeninasAprobados]
@@ -684,6 +692,7 @@ const Estadisticas = () => {
                                 <option value="AULA 02">Aula 02</option>
                                 <option value="AULA 03">Aula 03</option>
                                 <option value="AULA 04">Aula 04</option>
+                                <option value="AULA 05">Aula 05</option>
                             </select>
                         </div>
                         <div className='flex justify-center items-center flex-row'>

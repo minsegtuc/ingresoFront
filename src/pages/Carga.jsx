@@ -930,6 +930,7 @@ const Carga = () => {
                                 <option value="AULA 02">Aula 02</option>
                                 <option value="AULA 03">Aula 03</option>
                                 <option value="AULA 04">Aula 04</option>
+                                <option value="AULA 05">Aula 05</option>
                             </select>
                         </div>
                         <div className='flex flex-row'>
@@ -947,7 +948,7 @@ const Carga = () => {
                         <CiCircleInfo className='text-lg text-[#005CA2] mb-1 ml-2' data-tooltip-id="tooltip2" data-tooltip-html="
                         <div style='max-width: 170px; text-align: center; background-color: #005CA2; color: white; border-radius: 8px;'>
                             <p>
-                                El archivo a cargar debe ser un archivo .xlsx con las siguientes columnas en este orden: dni, apellido, nombre, genero, aula, turno, fecha
+                                El archivo a cargar debe ser un archivo .xlsx con las siguientes columnas en este orden: dni, apellido, nombre, genero (M o F), aula (AULA 01), turno (T01), fecha (YYYY-MM-DD).
                             </p>
                             </div>"/>
                         <Tooltip
@@ -1036,6 +1037,7 @@ const Carga = () => {
                                 <option value="AULA 02">Aula 02</option>
                                 <option value="AULA 03">Aula 03</option>
                                 <option value="AULA 04">Aula 04</option>
+                                <option value="AULA 05">Aula 05</option>
                             </select>
                         </div>
                         <div className='flex flex-row items-center justify-center'>
@@ -1126,6 +1128,7 @@ const Carga = () => {
                                 <option value="AULA 02">Aula 02</option>
                                 <option value="AULA 03">Aula 03</option>
                                 <option value="AULA 04">Aula 04</option>
+                                <option value="AULA 05">Aula 05</option>
                             </select>
                         </div>
                         <div className='flex flex-row justify-center items-center w-full'>
@@ -1170,6 +1173,7 @@ const Carga = () => {
                                     <option value="AULA 02">Aula 02</option>
                                     <option value="AULA 03">Aula 03</option>
                                     <option value="AULA 04">Aula 04</option>
+                                    <option value="AULA 05">Aula 05</option>
                                 </select>
                             </div>
                             <div className='flex flex-row'>

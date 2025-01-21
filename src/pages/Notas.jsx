@@ -153,6 +153,7 @@ const Notas = () => {
                                 <option value="AULA 02">Aula 02</option>
                                 <option value="AULA 03">Aula 03</option>
                                 <option value="AULA 04">Aula 04</option>
+                                <option value="AULA 05">Aula 05</option>
                             </select>
                         </div>
                         <div className='flex justify-center items-center flex-row'>
