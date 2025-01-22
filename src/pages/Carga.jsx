@@ -371,7 +371,7 @@ const Carga = () => {
                         dni: resultado.dni,
                         nota: resultado.nota,
                         presencia: 1,
-                        examen_id,
+                        examen_id_actual: examen_id,
                     };
 
                     try {
