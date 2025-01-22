@@ -449,7 +449,7 @@ const Estadisticas = () => {
                 genero
             }
 
-            fetch(`${HOST}/api/aspirantes/aprobados`, {
+            fetch(`${HOST}/api/examenAspirantes/aprobados`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -473,9 +473,9 @@ const Estadisticas = () => {
                 .then(data => {
                     const corte = parseInt(data.corte)
                     const informacion = data.aspirantes;
-                    const procesados = new Set();
 
-                    // console.log("Informacion: ", informacion)
+                    console.log("Informacion: ", informacion)
+                    const procesados = new Set();
 
                     informacion.forEach(info => {
                         if (!procesados.has(info.examen_id)) {

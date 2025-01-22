@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { CiCircleInfo } from "react-icons/ci";
 import { Tooltip } from 'react-tooltip';
 import * as XLSX from 'xlsx';
+import { data } from 'autoprefixer';
 
 const Carga = () => {
 
@@ -12,6 +13,7 @@ const Carga = () => {
     const [aspirantesFile, setAspirantesFile] = useState([]);
     const [preguntasFile, setPreguntasFile] = useState([])
     const [examenFile, setExamenFile] = useState([]);
+    const [dataAspirantes, setDataAspirantes] = useState([]);
 
     //PARA CREAR UN EXAMEN
     const [fechaExamen, setFechaExamen] = useState('');
@@ -43,6 +45,7 @@ const Carga = () => {
     const [presencia, setPresencia] = useState('')
     const [nota, setNota] = useState('')
     const [examenIdAsp, setExamenIdAsp] = useState('')
+    const [examenIdAspActual, setExamenIdAspActual] = useState('')
 
     const [loadingCargaExamen, setLoadinCargaExamen] = useState(false)
     const [loadingCargaAspirantes, setLoadinCargaAspirantes] = useState(false)
@@ -149,6 +152,7 @@ const Carga = () => {
     }
 
     const searchExamenId = async (aula, turno, fecha) => {
+        console.log("Aula, turno y fecha: ", aula, turno, fecha)
         try {
             const response = await fetch(`${HOST}/api/examenes/estado`, {
                 method: 'GET',
@@ -220,13 +224,13 @@ const Carga = () => {
     const handleUploadAspirantes = async () => {
         if (aspirantesFile.length === 0) {
             Swal.fire({
-                title: 'Archivo vacio',
+                title: 'Archivo vacío',
                 icon: 'warning',
-                text: 'El archivo de aspirantes se encuentra vacio',
+                text: 'El archivo de aspirantes se encuentra vacío',
                 confirmButtonText: 'Aceptar'
-            })
+            });
         } else {
-            setLoadinCargaAspirantes(true)
+            setLoadinCargaAspirantes(true);
             const aspirantesFileFinal = await Promise.all(
                 aspirantesFile.map(async (aspirante) => ({
                     ...aspirante,
@@ -234,50 +238,92 @@ const Carga = () => {
                 }))
             );
 
-            //console.log("Aspirantes a cargar", aspirantesFileFinal)
-
             const totalAspirantes = aspirantesFileFinal.length;
             let aspiranteCountOk = 0;
             let aspiranteCountError = 0;
 
-            aspirantesFileFinal.forEach(aspirante => {
-                //console.log(aspirante)
-                fetch(`${HOST}/api/aspirantes/aspirante`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(aspirante),
-                })
-                    .then(response => {
-                        if (response.status === 200) {
+            await Promise.all(aspirantesFileFinal.map(async (aspirante) => {
+                const aspiranteACargar = {
+                    dni: aspirante.dni,
+                    nombre: aspirante.nombre,
+                    apellido: aspirante.apellido,
+                    genero: aspirante.genero,
+                };
+
+                const examenAspirante = {
+                    examen_id: aspirante.examen_id,
+                    aspirante_dni: aspirante.dni,
+                };
+
+                try {
+                    const aspiranteExistsResponse = await fetch(`${HOST}/api/aspirantes/${aspirante.dni}`, {
+                        method: 'GET',
+                        credentials: 'include',
+                    });
+                    const aspiranteExistsData = await aspiranteExistsResponse.json();
+
+                    if (Array.isArray(aspiranteExistsData) && aspiranteExistsData.length > 0) {
+                        //console.log("Aspirante encontrado");
+                        const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify(examenAspirante),
+                        });
+
+                        if (examenResponse.status === 200) {
                             aspiranteCountOk++;
-                            if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
-                                setLoadinCargaAspirantes(false)
-                                Swal.fire({
-                                    title: 'Aspirantes cargados',
-                                    icon: 'success',
-                                    text: 'Aspirantes cargados correctamente: ' + aspiranteCountOk + ' - Errores: ' + aspiranteCountError,
-                                    confirmButtonText: 'Aceptar'
-                                })
-                            }
-                        } else if (response.status === 403) {
-                            setLoadinCargaAspirantes(false)
-                            Swal.fire({
-                                title: 'Credenciales caducadas',
-                                icon: 'info',
-                                text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
-                            }).then((result) => {
-                                handleSession()
-                            })
                         } else {
                             aspiranteCountError++;
                         }
-                    })
-            })
+                    } else {
+                        //console.log("Aspirante no encontrado");
+                        const createResponse = await fetch(`${HOST}/api/aspirantes/aspirante`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify(aspiranteACargar),
+                        });
+
+                        if (createResponse.status === 200) {
+                            const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                credentials: 'include',
+                                body: JSON.stringify(examenAspirante),
+                            });
+
+                            if (examenResponse.status === 200) {
+                                aspiranteCountOk++;
+                            } else {
+                                aspiranteCountError++;
+                            }
+                        } else {
+                            aspiranteCountError++;
+                        }
+                    }
+                } catch (error) {
+                    aspiranteCountError++;
+                }
+
+                if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
+                    setLoadinCargaAspirantes(false);
+                    Swal.fire({
+                        title: 'Carga finalizada',
+                        icon: 'success',
+                        text: `Aspirantes cargados correctamente: ${aspiranteCountOk} - Errores: ${aspiranteCountError}`,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            }));
         }
-    }
+    };
 
     const handleUploadResultados = async () => {
         setLoadinCargaNotas(true)
@@ -315,15 +361,21 @@ const Carga = () => {
         );
 
         if (examenCheck) {
+
+            const examen_id = await searchExamenId(aulaCarga, turnoCarga, fechaCarga);
+            console.log("Examen chequeado: " , examen_id)
+
             try {
                 for (const resultado of examenFile) {
                     const aspiranteACargar = {
+                        dni: resultado.dni,
                         nota: resultado.nota,
                         presencia: 1,
+                        examen_id,
                     };
 
                     try {
-                        const response = await fetch(`${HOST}/api/aspirantes/update/${resultado.dni}`, {
+                        const response = await fetch(`${HOST}/api/examenAspirantes/update`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -566,6 +618,30 @@ const Carga = () => {
                 .then(response => {
                     if (response.status === 200) {
                         setLoadingSearchAspirante(false)
+                        fetch(`${HOST}/api/examenAspirantes/${dniSearch}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            credentials: 'include',
+                        })
+                            .then(response => {
+                                if (response.status === 200) {
+                                    return response.json();
+                                } else if (response.status === 403) {
+                                    Swal.fire({
+                                        title: 'Credenciales caducadas',
+                                        icon: 'info',
+                                        text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion'
+                                    }).then((result) => {
+                                        handleSession()
+                                    })
+                                }
+                            })
+                            .then(data => {
+                                console.log(data)
+                                setDataAspirantes(data)
+                            })
                         return response.json();
                     } else if (response.status === 403) {
                         Swal.fire({
@@ -581,9 +657,9 @@ const Carga = () => {
                     setNombre(data[0].nombre)
                     setApellido(data[0].apellido)
                     setGenero(data[0].genero)
-                    setPresencia(data[0].presencia)
-                    setNota(data[0].nota)
-                    setExamenIdAsp(data[0].examen_id)
+                    // setPresencia(data[0].presencia)
+                    // setNota(data[0].nota)
+                    // setExamenIdAsp(data[0].examen_id)
                 })
         } else {
             setLoadingSearchAspirante(false)
@@ -702,15 +778,16 @@ const Carga = () => {
             setLoadingUpdateAspirante(true)
             const aspiranteUpdate = {
                 dni: dniSearch,
-                nombre,
-                apellido,
-                genero,
+                // nombre,
+                // apellido,
+                // genero,
                 presencia,
                 nota,
+                examen_id_actual: examenIdAspActual,
                 examen_id: examenIdAsp
             }
 
-            fetch(`${HOST}/api/aspirantes/update/${dniSearch}`, {
+            fetch(`${HOST}/api/examenAspirantes/update`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -728,6 +805,7 @@ const Carga = () => {
                         setPresencia('')
                         setNota('')
                         setExamenIdAsp('')
+                        setDataAspirantes([])
 
                         Swal.fire({
                             title: 'Aspirante actualizado',
@@ -842,6 +920,13 @@ const Carga = () => {
                 text: 'Faltan campos por completar',
             })
         }
+    }
+
+    const handleSelectAspirante = (presenciaU, nota, examen_id) => {
+        setPresencia(presenciaU)
+        setNota(nota)
+        setExamenIdAspActual(examen_id)
+        setExamenIdAsp(examen_id)
     }
 
     useEffect(() => {
@@ -1211,7 +1296,7 @@ const Carga = () => {
                         </div>
                     </div>
                     <div className='w-full md:w-3/4 h-auto flex flex-col md:flex-row justify-center items-center md:ml-8 gap-4'>
-                        <div className='md:w-1/3 w-full flex flex-col gap-4 items-center justify-center h-full'>
+                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full mr-4'>
                             <div className='flex flex-row'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Nombre:</label>
@@ -1235,12 +1320,40 @@ const Carga = () => {
                                 </select>
                             </div>
                         </div>
-                        <div className='md:w-1/3 w-full flex flex-col gap-4 items-center justify-center h-full'>
+                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full'>
+                            <table className='w-full ml-14'>
+                                <thead className='bg-[#005CA2] text-white'>
+                                    <tr>
+                                        <th>Presente</th>
+                                        <th>Nota</th>
+                                        <th>Examen</th>
+                                        <th>Modificar</th>
+                                    </tr>
+                                </thead>
+                                <tbody className='bg-white'>
+                                    {
+                                        dataAspirantes && dataAspirantes.map((aspirante) => {
+                                            return (
+                                                <tr key={aspirante.dni} className='border-b-[1px] border-gray-400'>
+                                                    <td className='text-center'>{aspirante.presencia ? aspirante.presencia : '-'}</td>
+                                                    <td className='text-center'>{aspirante.nota ? aspirante.nota : '-'}</td>
+                                                    <td className='text-center'>{aspirante.examen_id ? aspirante.examen_id : '-'}</td>
+                                                    <td className='text-center'>
+                                                        <button className='bg-[#005CA2] text-white px-2 py-1 rounded-md cursor-pointer' onClick={() => handleSelectAspirante(aspirante.presencia, aspirante.nota, aspirante.examen_id)}>S</button>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full'>
                             <div className='flex flex-row'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Presencia:</label>
                                 </div>
-                                <input type="text" value={presencia} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='presencia' onChange={(e) => handleInputExamen(e)} />
+                                <input type="text" value={presencia} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='presencia' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
                             <div className='flex flex-row'>
                                 <div className='flex justify-end w-16 md:w-32'>
@@ -1255,8 +1368,8 @@ const Carga = () => {
                                 <input type="text" value={examenIdAsp} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='examenIdAsp' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
                         </div>
-                        <div className='md:w-1/3 w-full flex justify-center'>
-                            <button className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingUpdateAspirante ? 'animate-pulse' : 'animate-none'}`} onClick={handleUpdateAspirante}>ACTUALIZAR</button>
+                        <div className='md:w-1/4 w-full flex justify-center'>
+                            <button className={`bg-[#005CA2] text-white w-fit px-3 py-1 rounded-md font-semibold ${loadingUpdateAspirante ? 'animate-pulse' : 'animate-none'}`} onClick={handleUpdateAspirante}>ACTUALIZAR</button>
                         </div>
                     </div>
                 </div>

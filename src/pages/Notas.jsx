@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 
 const Notas = () => {
 
-    const [fecha, setFecha] = useState(`${new Date().getFullYear()}-${(new Date().getMonth())+1}-${new Date().getDay()}`)
+    const [fecha, setFecha] = useState(``)
     const [turno, setTurno] = useState('')
     const [aula, setAula] = useState('')
     const [genero, setGenero] = useState('')
@@ -63,7 +63,7 @@ const Notas = () => {
     };
 
     const borrarFiltros = () => {
-        setFecha(`${new Date().getFullYear()}-${(new Date().getMonth())+1}-${new Date().getDay()}`)
+        setFecha(``)
         setTurno('')
         setAula('')
         setGenero('')
@@ -82,7 +82,7 @@ const Notas = () => {
 
         // console.log("Parametros: " , parametros)
 
-        fetch(`${HOST}/api/aspirantes/aspirantes`, {
+        fetch(`${HOST}/api/examenAspirantes/aspirantes`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -207,6 +207,7 @@ const Notas = () => {
                                     <th className='text-center px-2'>Genero</th>
                                     <th className='text-center px-2'>Turno</th>
                                     <th className='text-center px-4'>Aula</th>
+                                    <th className='text-center px-4'>Fecha</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -221,6 +222,7 @@ const Notas = () => {
                                             <td className='text-center'>{aspirante.genero}</td>
                                             <td className='text-center'>{aspirante.turno}</td>
                                             <td className='text-center'>{aspirante.aula}</td>
+                                            <td className='text-center'>{aspirante.fecha}</td>
                                         </tr>
                                     ))
                                 }
