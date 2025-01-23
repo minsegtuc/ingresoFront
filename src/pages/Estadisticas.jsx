@@ -36,10 +36,11 @@ const Estadisticas = () => {
     const [loading, setLoading] = useState(false)
 
     const { HOST, handleSession } = useContext(ContextConfig)
-    const [fecha, setFecha] = useState(`${new Date().getFullYear()}-${(new Date().getMonth()) + 1}-${new Date().getDay()}`)
+    const [fecha, setFecha] = useState('aaaa-mm-dd')
     const [turno, setTurno] = useState('')
     const [aula, setAula] = useState('')
     const [genero, setGenero] = useState('')
+    const [corte, setCorte] = useState('')
 
     const [aprobadosFinal, setAprobadosFinal] = useState(null)
     const [desaprobadosFinal, setDesaprobadosFinal] = useState(null)
@@ -307,6 +308,8 @@ const Estadisticas = () => {
             setAula(value);
         } else if (name === 'genero') {
             setGenero(value);
+        } else if (name === 'corte') {
+            setCorte(value);
         }
     }
 
@@ -377,10 +380,11 @@ const Estadisticas = () => {
     };
 
     const borrarFiltros = () => {
-        setFecha(`${new Date().getFullYear()}-${(new Date().getMonth()) + 1}-${new Date().getDay()}`)
+        setFecha(`'aaaa-mm-dd'`)
         setTurno('')
         setAula('')
         setGenero('')
+        setCorte('')
     }
 
     useEffect(() => {
@@ -471,7 +475,7 @@ const Estadisticas = () => {
                     }
                 })
                 .then(data => {
-                    const corte = parseInt(data.corte)
+                    //const corte = parseInt(data.corte)
                     const informacion = data.aspirantes;
 
                     console.log("Informacion: ", informacion)
@@ -654,7 +658,27 @@ const Estadisticas = () => {
 
         return () => clearInterval(intervalo);
 
-    }, [fecha, aula, turno, genero])
+    }, [fecha, aula, turno, genero, corte])
+
+    useEffect(() => {
+        if (corte === '') {
+            Swal.fire({
+                title: 'Información',
+                icon: 'info',
+                text: 'Para visualizar las estadísticas, por favor ingrese primero la nota de corte, luego puede usar los filtros de fecha, turno, aula y género para obtener los resultados deseados.',
+            });
+        }
+    }, [])
+
+    useEffect(() => {
+        if (corte === '') {
+            setFecha('aaaa-mm-dd')
+            setTurno('')
+            setAula('')
+            setGenero('')
+            setCorte('')
+        }
+    }, [corte])
 
     return (
         <div className='text-xs flex flex-col w-full h-full lg:relative lg:left-52'>
@@ -663,16 +687,22 @@ const Estadisticas = () => {
                 <div className='lg:w-2/3 w-full flex flex-col md:flex-row mb-4 lg:mb-0'>
                     <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
                         <div className='flex justify-center flex-row'>
+                            <div className='flex justify-end w-28 mr-6'>
+                                <label htmlFor="" className=''>Nota corte:</label>
+                            </div>
+                            <input type="number" name="corte" id="" className='rounded-md min-w-36 pl-2' value={corte} onChange={(e) => handleChangeInput(e)} />
+                        </div>
+                        <div className='flex justify-center flex-row'>
                             <div className='flex justify-end w-28 mr-4'>
                                 <label htmlFor="" className=''>Ingrese fecha:</label>
                             </div>
-                            <input type="date" name="fecha" id="" className='rounded-md min-w-36 px-2' value={fecha} onChange={(e) => handleChangeInput(e)} />
+                            <input type="date" name="fecha" id="" className={`rounded-md min-w-36 px-2`} value={fecha} onChange={(e) => handleChangeInput(e)} disabled={!corte} />
                         </div>
                         <div className='flex justify-center flex-row'>
                             <div className='flex justify-end w-28 mr-4'>
                                 <label htmlFor="" className=''>Ingrese turno:</label>
                             </div>
-                            <select name="turno" id="" className='rounded-md min-w-36 px-2' value={turno} onChange={(e) => handleChangeInput(e)}>
+                            <select name="turno" id="" className='rounded-md min-w-36 px-2' value={turno} onChange={(e) => handleChangeInput(e)} disabled={!corte}>
                                 <option value="" disabled>Seleccione turno</option>
                                 <option value="T01">T01</option>
                                 <option value="T02">T02</option>
@@ -686,7 +716,7 @@ const Estadisticas = () => {
                             <div className='flex justify-end w-28 mr-4'>
                                 <label htmlFor="" className=''>Ingrese aula:</label>
                             </div>
-                            <select name="aula" id="" className='rounded-md min-w-36 px-2' value={aula} onChange={(e) => handleChangeInput(e)}>
+                            <select name="aula" id="" className='rounded-md min-w-36 px-2' value={aula} onChange={(e) => handleChangeInput(e)} disabled={!corte}>
                                 <option value="" disabled>Seleccione aula</option>
                                 <option value="AULA 01">Aula 01</option>
                                 <option value="AULA 02">Aula 02</option>
@@ -699,7 +729,7 @@ const Estadisticas = () => {
                             <div className='flex justify-end w-28 ml-3'>
                                 <label htmlFor="" className=''>Ingrese genero:</label>
                             </div>
-                            <select name="genero" id="" className='rounded-md min-w-36 px-2' value={genero} onChange={(e) => handleChangeInput(e)}>
+                            <select name="genero" id="" className='rounded-md min-w-36 px-2' value={genero} onChange={(e) => handleChangeInput(e)} disabled={!corte}>
                                 <option value="" disabled>Seleccione genero</option>
                                 <option value="M">Masculinos</option>
                                 <option value="F">Femeninas</option>
