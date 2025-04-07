@@ -652,7 +652,7 @@ const Estadisticas = () => {
                 })
         }
 
-        const intervalo = setInterval(ejecucion, 5 * 60 * 1000);
+        const intervalo = setInterval(ejecucion, 10 * 60 * 1000);
 
         ejecucion()
 
