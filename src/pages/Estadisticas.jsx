@@ -688,7 +688,7 @@ const Estadisticas = () => {
                     <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
                         <div className='flex justify-center flex-row'>
                             <div className='flex justify-end w-28 mr-6'>
-                                <label htmlFor="" className=''>Nota corte:</label>
+                                <label htmlFor="" className='font-bold'>Nota corte:</label>
                             </div>
                             <input type="number" name="corte" id="" className='rounded-md min-w-36 pl-2' value={corte} onChange={(e) => handleChangeInput(e)} />
                         </div>
@@ -708,6 +708,8 @@ const Estadisticas = () => {
                                 <option value="T02">T02</option>
                                 <option value="T03">T03</option>
                                 <option value="T04">T04</option>
+                                <option value="T05">T05</option>
+                                <option value="T06">T06</option>
                             </select>
                         </div>
                     </div>

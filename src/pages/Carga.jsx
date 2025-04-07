@@ -152,7 +152,7 @@ const Carga = () => {
     }
 
     const searchExamenId = async (aula, turno, fecha) => {
-        console.log("Aula, turno y fecha: ", aula, turno, fecha)
+        //console.log("Aula, turno y fecha: ", aula, turno, fecha)
         try {
             const response = await fetch(`${HOST}/api/examenes/estado`, {
                 method: 'GET',
@@ -815,7 +815,7 @@ const Carga = () => {
                         })
                         return response.json();
                     } else if (response.status === 403) {
-                        setLoadinUpdateAspirante(false)
+                        setLoadingUpdateAspirante(false)
                         Swal.fire({
                             title: 'Credenciales caducadas',
                             icon: 'info',
@@ -826,7 +826,7 @@ const Carga = () => {
                     }
                 })
         } else {
-            setLoadinUpdateAspirante(false)
+            setLoadingUpdateAspirante(false)
             Swal.fire({
                 title: 'Campos imcompletos',
                 icon: 'info',
@@ -1003,6 +1003,8 @@ const Carga = () => {
                                 <option value="T02">T02</option>
                                 <option value="T03">T03</option>
                                 <option value="T04">T04</option>
+                                <option value="T05">T05</option>
+                                <option value="T06">T06</option>
                             </select>
                         </div>
                         <div className='flex flex-row'>
@@ -1043,6 +1045,7 @@ const Carga = () => {
                             style={{ backgroundColor: "#005CA2" }}
                         />
                     </div>
+                    <p className='text-xs text-red-500 mb-4 font-semibold'>¡El aula y turno del aspirante debe estar previamente cargado!</p>
                     <div className='flex flex-row  items-center justify-center'>
                         <div className='flex justify-center items-center w-full'>
                             <label htmlFor="" className=''>Archivo aspirantes:</label>
@@ -1110,6 +1113,8 @@ const Carga = () => {
                                 <option value="T02">T02</option>
                                 <option value="T03">T03</option>
                                 <option value="T04">T04</option>
+                                <option value="T05">T05</option>
+                                <option value="T06">T06</option>
                             </select>
                         </div>
                         <div className='flex flex-row'>
@@ -1201,6 +1206,8 @@ const Carga = () => {
                                 <option value="T02">T02</option>
                                 <option value="T03">T03</option>
                                 <option value="T04">T04</option>
+                                <option value="T05">T05</option>
+                                <option value="T06">T06</option>
                             </select>
                         </div>
                         <div className='flex flex-row'>
@@ -1244,6 +1251,8 @@ const Carga = () => {
                                     <option value="T02">T02</option>
                                     <option value="T03">T03</option>
                                     <option value="T04">T04</option>
+                                    <option value="T05">T05</option>
+                                    <option value="T06">T06</option>
                                 </select>
                             </div>
                         </div>

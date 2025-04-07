@@ -139,6 +139,8 @@ const Notas = () => {
                                 <option value="T02">T02</option>
                                 <option value="T03">T03</option>
                                 <option value="T04">T04</option>
+                                <option value="T05">T05</option>
+                                <option value="T06">T06</option>
                             </select>
                         </div>
                     </div>
