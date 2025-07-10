@@ -13,11 +13,12 @@ const RutaProtegida = () => {
     // }, [])
 
     useEffect(() => {
-        // console.log("Ingreso a Ruta Protegida");
+        console.log("Ingreso a Ruta Protegida");
         fetch(`${HOST}/api/verifyToken`, {
             method: 'GET',
             credentials: 'include'
         }).then(res => {
+            console.log('Respuesta de verifyToken:', res);
             if (res.status === 200) {
                 return res.json();
             } else {

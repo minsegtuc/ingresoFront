@@ -25,7 +25,7 @@ export const ContextProvider = ({ children }) => {
     const handleLogout = () => {
         setLogin(false);
         setRol(null);
-        Cookies.remove(auth_token);
+        Cookies.remove('auth_token');
     };
 
     // useEffect(() => {
