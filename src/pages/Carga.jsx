@@ -151,8 +151,15 @@ const Carga = () => {
         reader.readAsArrayBuffer(file);
     }
 
+    const processInChunks = async (items, chunkSize, callback) => {
+        for (let i = 0; i < items.length; i += chunkSize) {
+            const chunk = items.slice(i, i + chunkSize);
+            await Promise.all(chunk.map(callback));
+        }
+    };
+
     const searchExamenId = async (aula, turno, fecha) => {
-        //console.log("Aula, turno y fecha: ", aula, turno, fecha)
+        console.log("Aula, turno y fecha: ", aula, turno, fecha)
         try {
             const response = await fetch(`${HOST}/api/examenes/estado`, {
                 method: 'GET',
@@ -221,6 +228,12 @@ const Carga = () => {
             })
     }
 
+    // useEffect(() => {
+    //     console.log(aspirantesFile)
+    // }, [aspirantesFile]);
+
+    // const handleUploadAspirantes = async () => {
+
     const handleUploadAspirantes = async () => {
         if (aspirantesFile.length === 0) {
             Swal.fire({
@@ -231,18 +244,18 @@ const Carga = () => {
             });
         } else {
             setLoadinCargaAspirantes(true);
-            const aspirantesFileFinal = await Promise.all(
-                aspirantesFile.map(async (aspirante) => ({
-                    ...aspirante,
-                    examen_id: await searchExamenId(aspirante.aula, aspirante.turno, aspirante.fecha),
-                }))
-            );
+            const aspirantesFileFinal = [];
+
+            await processInChunks(aspirantesFile, 10, async (aspirante) => {
+                const examen_id = await searchExamenId(aspirante.aula, aspirante.turno, aspirante.fecha);
+                aspirantesFileFinal.push({ ...aspirante, examen_id });
+            });
 
             const totalAspirantes = aspirantesFileFinal.length;
             let aspiranteCountOk = 0;
-            let aspiranteCountError = 0;
+            let erroresAspirantes = []; // Aquí guardaremos los aspirantes con errores
 
-            await Promise.all(aspirantesFileFinal.map(async (aspirante) => {
+            await processInChunks(aspirantesFileFinal, 10, async (aspirante) => {
                 const aspiranteACargar = {
                     dni: aspirante.dni,
                     nombre: aspirante.nombre,
@@ -263,12 +276,9 @@ const Carga = () => {
                     const aspiranteExistsData = await aspiranteExistsResponse.json();
 
                     if (Array.isArray(aspiranteExistsData) && aspiranteExistsData.length > 0) {
-                        //console.log("Aspirante encontrado");
                         const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             credentials: 'include',
                             body: JSON.stringify(examenAspirante),
                         });
@@ -276,15 +286,13 @@ const Carga = () => {
                         if (examenResponse.status === 200) {
                             aspiranteCountOk++;
                         } else {
-                            aspiranteCountError++;
+                            // Error al vincular aspirante con examen
+                            erroresAspirantes.push({ ...aspirante, error: 'Error al vincular con el examen' });
                         }
                     } else {
-                        //console.log("Aspirante no encontrado");
                         const createResponse = await fetch(`${HOST}/api/aspirantes/aspirante`, {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             credentials: 'include',
                             body: JSON.stringify(aspiranteACargar),
                         });
@@ -292,9 +300,7 @@ const Carga = () => {
                         if (createResponse.status === 200) {
                             const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
                                 method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
+                                headers: { 'Content-Type': 'application/json' },
                                 credentials: 'include',
                                 body: JSON.stringify(examenAspirante),
                             });
@@ -302,28 +308,156 @@ const Carga = () => {
                             if (examenResponse.status === 200) {
                                 aspiranteCountOk++;
                             } else {
-                                aspiranteCountError++;
+                                // Error al vincular aspirante recién creado con examen
+                                erroresAspirantes.push({ ...aspirante, error: 'Error al vincular con el examen (aspirante nuevo)' });
                             }
                         } else {
-                            aspiranteCountError++;
+                            // Error al crear el aspirante
+                            erroresAspirantes.push({ ...aspirante, error: 'Error al crear el aspirante' });
                         }
                     }
                 } catch (error) {
-                    aspiranteCountError++;
+                    // Error de red o en alguna de las peticiones
+                    erroresAspirantes.push({ ...aspirante, error: 'Error de conexión o en la API' });
                 }
+            });
 
-                if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
-                    setLoadinCargaAspirantes(false);
-                    Swal.fire({
-                        title: 'Carga finalizada',
-                        icon: 'success',
-                        text: `Aspirantes cargados correctamente: ${aspiranteCountOk} - Errores: ${aspiranteCountError}`,
-                        confirmButtonText: 'Aceptar'
-                    });
-                }
-            }));
+            setLoadinCargaAspirantes(false);
+
+            // Muestra el resultado final con detalles de los errores
+            const aspiranteCountError = erroresAspirantes.length;
+            if (aspiranteCountError > 0) {
+                // Muestra los errores en un formato legible
+                const erroresHtml = erroresAspirantes.map(err => `
+                <li>**DNI:** ${err.dni}, **Nombre:** ${err.nombre}, **Error:** ${err.error}</li>
+            `).join('');
+
+                Swal.fire({
+                    title: 'Carga finalizada con errores',
+                    icon: 'warning',
+                    html: `
+                    <p>Aspirantes cargados correctamente: ${aspiranteCountOk}</p>
+                    <p>Errores: ${aspiranteCountError}</p>
+                    <p>Lista de aspirantes con errores:</p>
+                    <ul style="text-align: left;">
+                        ${erroresHtml}
+                    </ul>
+                `,
+                    confirmButtonText: 'Aceptar'
+                });
+                console.error("Aspirantes con errores:", erroresAspirantes); // Para depuración
+            } else {
+                Swal.fire({
+                    title: 'Carga finalizada',
+                    icon: 'success',
+                    text: `Aspirantes cargados correctamente: ${aspiranteCountOk} - Errores: ${aspiranteCountError}`,
+                    confirmButtonText: 'Aceptar'
+                });
+            }
         }
     };
+    //     if (aspirantesFile.length === 0) {
+    //         Swal.fire({
+    //             title: 'Archivo vacío',
+    //             icon: 'warning',
+    //             text: 'El archivo de aspirantes se encuentra vacío',
+    //             confirmButtonText: 'Aceptar'
+    //         });
+    //     } else {
+    //         setLoadinCargaAspirantes(true);
+    //         const aspirantesFileFinal = await Promise.all(
+    //             aspirantesFile.map(async (aspirante) => ({
+    //                 ...aspirante,
+    //                 examen_id: await searchExamenId(aspirante.aula, aspirante.turno, aspirante.fecha),
+    //             }))
+    //         );
+
+    //         const totalAspirantes = aspirantesFileFinal.length;
+    //         let aspiranteCountOk = 0;
+    //         let aspiranteCountError = 0;
+
+    //         await Promise.all(aspirantesFileFinal.map(async (aspirante) => {
+    //             const aspiranteACargar = {
+    //                 dni: aspirante.dni,
+    //                 nombre: aspirante.nombre,
+    //                 apellido: aspirante.apellido,
+    //                 genero: aspirante.genero,
+    //             };
+
+    //             const examenAspirante = {
+    //                 examen_id: aspirante.examen_id,
+    //                 aspirante_dni: aspirante.dni,
+    //             };
+
+    //             try {
+    //                 const aspiranteExistsResponse = await fetch(`${HOST}/api/aspirantes/${aspirante.dni}`, {
+    //                     method: 'GET',
+    //                     credentials: 'include',
+    //                 });
+    //                 const aspiranteExistsData = await aspiranteExistsResponse.json();
+
+    //                 if (Array.isArray(aspiranteExistsData) && aspiranteExistsData.length > 0) {
+    //                     //console.log("Aspirante encontrado");
+    //                     const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
+    //                         method: 'POST',
+    //                         headers: {
+    //                             'Content-Type': 'application/json',
+    //                         },
+    //                         credentials: 'include',
+    //                         body: JSON.stringify(examenAspirante),
+    //                     });
+
+    //                     if (examenResponse.status === 200) {
+    //                         aspiranteCountOk++;
+    //                     } else {
+    //                         aspiranteCountError++;
+    //                     }
+    //                 } else {
+    //                     //console.log("Aspirante no encontrado");
+    //                     const createResponse = await fetch(`${HOST}/api/aspirantes/aspirante`, {
+    //                         method: 'POST',
+    //                         headers: {
+    //                             'Content-Type': 'application/json',
+    //                         },
+    //                         credentials: 'include',
+    //                         body: JSON.stringify(aspiranteACargar),
+    //                     });
+
+    //                     if (createResponse.status === 200) {
+    //                         const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
+    //                             method: 'POST',
+    //                             headers: {
+    //                                 'Content-Type': 'application/json',
+    //                             },
+    //                             credentials: 'include',
+    //                             body: JSON.stringify(examenAspirante),
+    //                         });
+
+    //                         if (examenResponse.status === 200) {
+    //                             aspiranteCountOk++;
+    //                         } else {
+    //                             aspiranteCountError++;
+    //                         }
+    //                     } else {
+    //                         aspiranteCountError++;
+    //                     }
+    //                 }
+    //             } catch (error) {
+    //                 aspiranteCountError++;
+    //             }
+
+    //             if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
+    //                 setLoadinCargaAspirantes(false);
+    //                 Swal.fire({
+    //                     title: 'Carga finalizada',
+    //                     icon: 'success',
+    //                     text: `Aspirantes cargados correctamente: ${aspiranteCountOk} - Errores: ${aspiranteCountError}`,
+    //                     confirmButtonText: 'Aceptar'
+    //                 });
+    //             }
+    //         }));
+    //     }
+    // };
 
     const handleUploadResultados = async () => {
         setLoadinCargaNotas(true)
@@ -363,7 +497,7 @@ const Carga = () => {
         if (examenCheck) {
 
             const examen_id = await searchExamenId(aulaCarga, turnoCarga, fechaCarga);
-            console.log("Examen chequeado: " , examen_id)
+            console.log("Examen chequeado: ", examen_id)
 
             try {
                 for (const resultado of examenFile) {
