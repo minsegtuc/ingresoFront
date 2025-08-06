@@ -38,6 +38,7 @@ const Login = () => {
                 }
             })
             .then(data => {
+                console.log(data)
                 const token = data.token;
                 const decoded = jwtDecode(token);
                 const rol = decoded.rol;
