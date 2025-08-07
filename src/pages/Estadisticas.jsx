@@ -36,7 +36,8 @@ const Estadisticas = () => {
     const [loading, setLoading] = useState(false)
 
     const { HOST, handleSession } = useContext(ContextConfig)
-    const [fecha, setFecha] = useState('aaaa-mm-dd')
+    const [fechaDesde, setFechaDesde] = useState('aaaa-mm-dd')
+    const [fechaHasta, setFechaHasta] = useState('aaaa-mm-dd')
     const [turno, setTurno] = useState('')
     const [aula, setAula] = useState('')
     const [genero, setGenero] = useState('')
@@ -300,15 +301,22 @@ const Estadisticas = () => {
     const handleChangeInput = (e) => {
         const { name, value } = e.target;
         //console.log(name, value)
-        if (name === 'fecha') {
-            setFecha(value);
-        } else if (name === 'turno') {
+        if (name === 'fechaDesde') {
+            setFechaDesde(value);
+        }
+        if (name === 'fechaHasta') {
+            setFechaHasta(value);
+        }
+        if (name === 'turno') {
             setTurno(value);
-        } else if (name === 'aula') {
+        }
+        if (name === 'aula') {
             setAula(value);
-        } else if (name === 'genero') {
+        }
+        if (name === 'genero') {
             setGenero(value);
-        } else if (name === 'corte') {
+        }
+        if (name === 'corte') {
             setCorte(value);
         }
     }
@@ -380,7 +388,8 @@ const Estadisticas = () => {
     };
 
     const borrarFiltros = () => {
-        setFecha(`'aaaa-mm-dd'`)
+        setFechaDesde(`'aaaa-mm-dd'`)
+        setFechaHasta(`'aaaa-mm-dd'`)
         setTurno('')
         setAula('')
         setGenero('')
@@ -447,7 +456,8 @@ const Estadisticas = () => {
             let femeninasDesaprobadas = 0
 
             let parametros = {
-                fecha,
+                fechaDesde,
+                fechaHasta,
                 turno,
                 aula,
                 genero
@@ -478,7 +488,7 @@ const Estadisticas = () => {
                     //const corte = parseInt(data.corte)
                     const informacion = data.aspirantes;
 
-                    console.log("Informacion: ", informacion)
+                    //console.log("Informacion: ", informacion)
                     const procesados = new Set();
 
                     informacion.forEach(info => {
@@ -658,7 +668,7 @@ const Estadisticas = () => {
 
         return () => clearInterval(intervalo);
 
-    }, [fecha, aula, turno, genero, corte])
+    }, [fechaDesde, fechaHasta, aula, turno, genero, corte])
 
     useEffect(() => {
         if (corte === '') {
@@ -672,7 +682,8 @@ const Estadisticas = () => {
 
     useEffect(() => {
         if (corte === '') {
-            setFecha('aaaa-mm-dd')
+            setFechaDesde('aaaa-mm-dd')
+            setFechaHasta('aaaa-mm-dd')
             setTurno('')
             setAula('')
             setGenero('')
@@ -694,10 +705,19 @@ const Estadisticas = () => {
                         </div>
                         <div className='flex justify-center flex-row'>
                             <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Ingrese fecha:</label>
+                                <label htmlFor="" className=''>Fecha desde:</label>
                             </div>
-                            <input type="date" name="fecha" id="" className={`rounded-md min-w-36 px-2`} value={fecha} onChange={(e) => handleChangeInput(e)} disabled={!corte} />
+                            <input type="date" name="fechaDesde" id="" className={`rounded-md min-w-36 px-2`} value={fechaDesde} onChange={(e) => handleChangeInput(e)} disabled={!corte} />
                         </div>
+                        <div className='flex justify-center flex-row'>
+                            <div className='flex justify-end w-28 mr-4'>
+                                <label htmlFor="" className=''>Fecha hasta:</label>
+                            </div>
+                            <input type="date" name="fechaHasta" id="" className={`rounded-md min-w-36 px-2`} value={fechaHasta} onChange={(e) => handleChangeInput(e)} disabled={!corte} />
+                        </div>
+
+                    </div>
+                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
                         <div className='flex justify-center flex-row'>
                             <div className='flex justify-end w-28 mr-4'>
                                 <label htmlFor="" className=''>Ingrese turno:</label>
@@ -712,8 +732,6 @@ const Estadisticas = () => {
                                 <option value="T06">T06</option>
                             </select>
                         </div>
-                    </div>
-                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
                         <div className='flex justify-center items-center flex-row'>
                             <div className='flex justify-end w-28 mr-4'>
                                 <label htmlFor="" className=''>Ingrese aula:</label>

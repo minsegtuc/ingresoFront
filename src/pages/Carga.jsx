@@ -1302,7 +1302,7 @@ const Carga = () => {
                 </div>
             </div>
             {/* ESTADO EXAMENES */}
-            <div className='mt-6 min-h-64 max-h-80 w-full flex flex-row flex-wrap items-center justify-center bg-[#005CA2]/75 rounded-md py-4 gap-4 overflow-scroll'>
+            <div className='mt-6 min-h-64 max-h-96 w-full flex flex-row flex-wrap items-center justify-center bg-[#005CA2]/75 rounded-md py-4 gap-4 overflow-scroll'>
                 {
                     examenes.map((examen) => {
                         return (

@@ -6,14 +6,15 @@ import * as XLSX from 'xlsx';
 
 const Notas = () => {
 
-    const [fecha, setFecha] = useState(``)
+    const [fechaDesde, setFechaDesde] = useState(``)
+    const [fechaHasta, setFechaHasta] = useState(``)
     const [turno, setTurno] = useState('')
     const [aula, setAula] = useState('')
     const [genero, setGenero] = useState('')
     const [condicion, setCondicion] = useState('')
 
     const [aspirantes, setAspirantes] = useState([])
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
     const [busqueda, setBusqueda] = useState('')
     const { HOST, handleSession } = useContext(ContextConfig)
 
@@ -24,20 +25,27 @@ const Notas = () => {
     const handleChangeInput = (e) => {
         const { name, value } = e.target;
         // console.log(name, value)
-        if (name === 'fecha') {
-            setFecha(value);
-        } else if (name === 'turno') {
+        if (name === 'fechaDesde') {
+            setFechaDesde(value);
+        }
+        if (name === 'fechaHasta') {
+            setFechaHasta(value);
+        } 
+        if (name === 'turno') {
             setTurno(value);
-        } else if (name === 'aula') {
+        } 
+        if (name === 'aula') {
             setAula(value);
-        } else if (name === 'genero') {
+        } 
+        if (name === 'genero') {
             setGenero(value);
-        } else if (name === 'condicion') {
+        } 
+        if (name === 'condicion') {
             setCondicion(value);
         }
     }
 
-    const exportarExcel = (aspirantes, fileName = `aspirantes${aula ? '-'+aula : ''}-${turno ? '-'+turno : ''}.xlsx`) => {
+    const exportarExcel = (aspirantes, fileName = `aspirantes${aula ? '-' + aula : ''}-${turno ? '-' + turno : ''}.xlsx`) => {
         if (!aspirantes || aspirantes.length === 0) {
             alert('No hay datos para exportar.');
             return;
@@ -48,7 +56,10 @@ const Notas = () => {
             Apellido: aspirante.apellido || '-',
             Nombre: aspirante.nombre || '-',
             Nota: aspirante.nota ? `${aspirante.nota}/20` : '-',
-            Genero: aspirante.genero || '-'
+            Genero: aspirante.genero || '-',
+            Turno: aspirante.turno || '-',
+            Aula: aspirante.aula || '-',
+            Fecha: aspirante.fecha || '-'
         }));
 
         // Crear un libro de Excel
@@ -70,19 +81,21 @@ const Notas = () => {
         setCondicion('')
     }
 
-    useEffect(() => {
+    const buscarNotas = () => {
+        setIsLoading(true)
         let parametros = {
-            fecha,
+            fechaDesde,
+            fechaHasta,
             turno,
             aula,
             busqueda,
-            genero, 
+            genero,
             condicion
         }
 
         // console.log("Parametros: " , parametros)
 
-        fetch(`${HOST}/api/examenAspirantes/aspirantes`, {
+        fetch(`${HOST}/api/examenAspirantes/aspirantesFiltros`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -106,7 +119,6 @@ const Notas = () => {
             })
             .then(data => {
                 if (data) {
-                    //console.log(data)
                     setAspirantes(data.aspirantes)
                 } else {
                     setAspirantes([])
@@ -115,7 +127,7 @@ const Notas = () => {
             .catch((error) => {
                 console.error('Error:', error);
             })
-    }, [fecha, aula, turno, busqueda, genero, condicion])
+    }
 
     return (
         <div className='text-xs flex flex-col w-full h-full lg:relative lg:left-52'>
@@ -125,16 +137,22 @@ const Notas = () => {
                     <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
                         <div className='flex justify-center flex-row'>
                             <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Ingrese fecha:</label>
+                                <label htmlFor="" className=''>Fecha desde:</label>
                             </div>
-                            <input type="date" name="fecha" id="" className='rounded-md min-w-36 px-2' value={fecha} onChange={(e) => handleChangeInput(e)} />
+                            <input type="date" name="fechaDesde" id="" className='rounded-md min-w-36 px-2' value={fechaDesde} onChange={(e) => handleChangeInput(e)} />
+                        </div>
+                        <div className='flex justify-center flex-row'>
+                            <div className='flex justify-end w-28 mr-4'>
+                                <label htmlFor="" className=''>Fecha hasta:</label>
+                            </div>
+                            <input type="date" name="fechaHasta" id="" className='rounded-md min-w-36 px-2' value={fechaHasta} onChange={(e) => handleChangeInput(e)} />
                         </div>
                         <div className='flex justify-center flex-row'>
                             <div className='flex justify-end w-28 mr-4'>
                                 <label htmlFor="" className=''>Ingrese turno:</label>
                             </div>
                             <select name="turno" id="" className='rounded-md min-w-36 px-2' value={turno} onChange={(e) => handleChangeInput(e)}>
-                                <option value="" disabled>Seleccione turno</option>
+                                <option value="">Seleccione turno</option>
                                 <option value="T01">T01</option>
                                 <option value="T02">T02</option>
                                 <option value="T03">T03</option>
@@ -150,7 +168,7 @@ const Notas = () => {
                                 <label htmlFor="" className=''>Ingrese aula:</label>
                             </div>
                             <select name="aula" id="" className='rounded-md min-w-36 px-2' value={aula} onChange={(e) => handleChangeInput(e)}>
-                                <option value="" disabled>Seleccione aula</option>
+                                <option value="">Seleccione aula</option>
                                 <option value="AULA 01">Aula 01</option>
                                 <option value="AULA 02">Aula 02</option>
                                 <option value="AULA 03">Aula 03</option>
@@ -163,7 +181,7 @@ const Notas = () => {
                                 <label htmlFor="" className=''>Ingrese genero:</label>
                             </div>
                             <select name="genero" id="" className='rounded-md min-w-36 px-2' value={genero} onChange={(e) => handleChangeInput(e)}>
-                                <option value="" disabled>Seleccione genero</option>
+                                <option value="">Seleccione genero</option>
                                 <option value="M">Masculinos</option>
                                 <option value="F">Femeninas</option>
                             </select>
@@ -173,16 +191,17 @@ const Notas = () => {
                                 <label htmlFor="" className=''>Ingrese condición:</label>
                             </div>
                             <select name="condicion" id="" className='rounded-md min-w-36 px-2' value={condicion} onChange={(e) => handleChangeInput(e)}>
-                                <option value="" disabled>Seleccione condición</option>
+                                <option value="">Seleccione condición</option>
                                 <option value="1">Presentes</option>
                                 <option value="0">Ausentes</option>
                             </select>
                         </div>
                     </div>
                 </div>
-                <div className='lg:w-1/3 w-full flex flex-col md:flex-row gap-3 justify-center items-center'>
+                <div className='lg:w-1/3 w-full flex flex-col flex-wrap gap-3 justify-center items-center'>
+                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={buscarNotas}>BUSCAR</button>
                     <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={borrarFiltros}>BORRAR FILTROS</button>
-                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={() => exportarExcel(aspirantes, `aspirantes${aula ? '-'+aula : ''}${turno ? '-'+turno : ''}.xlsx`)}>EXPORTAR</button>
+                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={() => exportarExcel(aspirantes, `aspirantes${aula ? '-' + aula : ''}${turno ? '-' + turno : ''}.xlsx`)}>EXPORTAR</button>
                 </div>
             </div>
             <div className='relative w-full mt-4 flex justify-start items-center'>
@@ -216,7 +235,7 @@ const Notas = () => {
                                 {
                                     aspirantes && aspirantes.map((aspirante, index) => (
                                         <tr key={index} className='h-8 bg-[#f0f0f0] border-y-[1px] border-gray-400'>
-                                            <td className='text-center'>{index+1}</td>
+                                            <td className='text-center'>{index + 1}</td>
                                             <td className='text-center'>{aspirante.dni}</td>
                                             <td className='text-center'>{aspirante.apellido}</td>
                                             <td className='text-center'>{aspirante.nombre}</td>
