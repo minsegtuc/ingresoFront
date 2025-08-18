@@ -5,6 +5,7 @@ import { CiCircleInfo } from "react-icons/ci";
 import { Tooltip } from 'react-tooltip';
 import * as XLSX from 'xlsx';
 import { data } from 'autoprefixer';
+import { split } from 'postcss/lib/list';
 
 const Carga = () => {
 
@@ -19,6 +20,7 @@ const Carga = () => {
     const [fechaExamen, setFechaExamen] = useState('');
     const [turnoExamen, setTurnoExamen] = useState('');
     const [aulaExamen, setAulaExamen] = useState('');
+    const [referenciaExamen, setReferenciaExamen] = useState('');
     const [cantidadExamen, setCantidadExamen] = useState('');
 
     //PARA ACTUALIZAR EXAMEN
@@ -228,12 +230,6 @@ const Carga = () => {
             })
     }
 
-    // useEffect(() => {
-    //     console.log(aspirantesFile)
-    // }, [aspirantesFile]);
-
-    // const handleUploadAspirantes = async () => {
-
     const handleUploadAspirantes = async () => {
         if (aspirantesFile.length === 0) {
             Swal.fire({
@@ -356,108 +352,6 @@ const Carga = () => {
             }
         }
     };
-    //     if (aspirantesFile.length === 0) {
-    //         Swal.fire({
-    //             title: 'Archivo vacío',
-    //             icon: 'warning',
-    //             text: 'El archivo de aspirantes se encuentra vacío',
-    //             confirmButtonText: 'Aceptar'
-    //         });
-    //     } else {
-    //         setLoadinCargaAspirantes(true);
-    //         const aspirantesFileFinal = await Promise.all(
-    //             aspirantesFile.map(async (aspirante) => ({
-    //                 ...aspirante,
-    //                 examen_id: await searchExamenId(aspirante.aula, aspirante.turno, aspirante.fecha),
-    //             }))
-    //         );
-
-    //         const totalAspirantes = aspirantesFileFinal.length;
-    //         let aspiranteCountOk = 0;
-    //         let aspiranteCountError = 0;
-
-    //         await Promise.all(aspirantesFileFinal.map(async (aspirante) => {
-    //             const aspiranteACargar = {
-    //                 dni: aspirante.dni,
-    //                 nombre: aspirante.nombre,
-    //                 apellido: aspirante.apellido,
-    //                 genero: aspirante.genero,
-    //             };
-
-    //             const examenAspirante = {
-    //                 examen_id: aspirante.examen_id,
-    //                 aspirante_dni: aspirante.dni,
-    //             };
-
-    //             try {
-    //                 const aspiranteExistsResponse = await fetch(`${HOST}/api/aspirantes/${aspirante.dni}`, {
-    //                     method: 'GET',
-    //                     credentials: 'include',
-    //                 });
-    //                 const aspiranteExistsData = await aspiranteExistsResponse.json();
-
-    //                 if (Array.isArray(aspiranteExistsData) && aspiranteExistsData.length > 0) {
-    //                     //console.log("Aspirante encontrado");
-    //                     const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
-    //                         method: 'POST',
-    //                         headers: {
-    //                             'Content-Type': 'application/json',
-    //                         },
-    //                         credentials: 'include',
-    //                         body: JSON.stringify(examenAspirante),
-    //                     });
-
-    //                     if (examenResponse.status === 200) {
-    //                         aspiranteCountOk++;
-    //                     } else {
-    //                         aspiranteCountError++;
-    //                     }
-    //                 } else {
-    //                     //console.log("Aspirante no encontrado");
-    //                     const createResponse = await fetch(`${HOST}/api/aspirantes/aspirante`, {
-    //                         method: 'POST',
-    //                         headers: {
-    //                             'Content-Type': 'application/json',
-    //                         },
-    //                         credentials: 'include',
-    //                         body: JSON.stringify(aspiranteACargar),
-    //                     });
-
-    //                     if (createResponse.status === 200) {
-    //                         const examenResponse = await fetch(`${HOST}/api/examenAspirantes/examenAspirante`, {
-    //                             method: 'POST',
-    //                             headers: {
-    //                                 'Content-Type': 'application/json',
-    //                             },
-    //                             credentials: 'include',
-    //                             body: JSON.stringify(examenAspirante),
-    //                         });
-
-    //                         if (examenResponse.status === 200) {
-    //                             aspiranteCountOk++;
-    //                         } else {
-    //                             aspiranteCountError++;
-    //                         }
-    //                     } else {
-    //                         aspiranteCountError++;
-    //                     }
-    //                 }
-    //             } catch (error) {
-    //                 aspiranteCountError++;
-    //             }
-
-    //             if (aspiranteCountOk + aspiranteCountError === totalAspirantes) {
-    //                 setLoadinCargaAspirantes(false);
-    //                 Swal.fire({
-    //                     title: 'Carga finalizada',
-    //                     icon: 'success',
-    //                     text: `Aspirantes cargados correctamente: ${aspiranteCountOk} - Errores: ${aspiranteCountError}`,
-    //                     confirmButtonText: 'Aceptar'
-    //                 });
-    //             }
-    //         }));
-    //     }
-    // };
 
     const handleUploadResultados = async () => {
         setLoadinCargaNotas(true)
@@ -549,22 +443,6 @@ const Carga = () => {
                         throw new Error("No se encontró el examen_id");
                     }
 
-                    // preguntasFile.map(pregunta => {
-                    //     const preguntaSubir = {
-                    //         ...pregunta,
-                    //         examen_id
-                    //     }
-
-                    //     fetch(`${HOST}/api/preguntas/pregunta`, {
-                    //         method: 'PUT',
-                    //         headers: {
-                    //             'Content-Type': 'application/json',
-                    //         },
-                    //         credentials: 'include',
-                    //         body: JSON.stringify(preguntaSubir),
-                    //     });
-                    // })                    
-
                     // console.log(`Examen ID encontrado: ${examen_id}`);
                     const examenResponse = await fetch(`${HOST}/api/examenes/update/${examen_id}`, {
                         method: 'PUT',
@@ -626,12 +504,18 @@ const Carga = () => {
         //console.log(name, value)
         if (name === 'fechaExamen') {
             setFechaExamen(value);
-        } else if (name === 'turnoExamen') {
+        }
+        if (name === 'turnoExamen') {
             setTurnoExamen(value);
-        } else if (name === 'aulaExamen') {
+        }
+        if (name === 'aulaExamen') {
             setAulaExamen(value);
-        } else if (name === 'cantidadExamen') {
+        }
+        if (name === 'cantidadExamen') {
             setCantidadExamen(value);
+        }
+        if (name === 'referenciaExamen') {
+            setReferenciaExamen(value);
         }
     }
 
@@ -640,9 +524,11 @@ const Carga = () => {
         // console.log(name, value)
         if (name === 'fechaCarga') {
             setFechaCarga(value);
-        } else if (name === 'turnoCarga') {
+        }
+        if (name === 'turnoCarga') {
             setTurnoCarga(value);
-        } else if (name === 'aulaCarga') {
+        }
+        if (name === 'aulaCarga') {
             setAulaCarga(value);
         }
     }
@@ -652,21 +538,29 @@ const Carga = () => {
         // console.log("Name y value: " , name, value)
         if (name === 'fechaExamenSearch') {
             setFechaExamenSearch(value);
-        } else if (name === 'turnoExamenSearch') {
+        }
+        if (name === 'turnoExamenSearch') {
             setTurnoExamenSearch(value);
-        } else if (name === 'aulaExamenSearch') {
+        }
+        if (name === 'aulaExamenSearch') {
             setAulaExamenSearch(value);
-        } else if (name === 'idExamenUpdate') {
+        }
+        if (name === 'idExamenUpdate') {
             setIdExamenUpdate(value)
-        } else if (name === 'fechaExamenUpdate') {
+        }
+        if (name === 'fechaExamenUpdate') {
             setFechaExamenUpdate(value)
-        } else if (name === 'turnoExamenUpdate') {
+        }
+        if (name === 'turnoExamenUpdate') {
             setTurnoExamenUpdate(value)
-        } else if (name === 'aulaExamenUpdate') {
+        }
+        if (name === 'aulaExamenUpdate') {
             setAulaExamenUpdate(value)
-        } else if (name === 'estadoExamenUpdate') {
+        }
+        if (name === 'estadoExamenUpdate') {
             setEstadoExamenUpdate(value)
-        } else if (name === 'cantidadExamenUpdate') {
+        }
+        if (name === 'cantidadExamenUpdate') {
             setCantidadExamenUpdate(value)
         }
     }
@@ -676,17 +570,23 @@ const Carga = () => {
 
         if (name === 'dniSearch') {
             setDniSearch(value);
-        } else if (name === 'nombre') {
+        }
+        if (name === 'nombre') {
             setNombre(value);
-        } else if (name === 'apellido') {
+        }
+        if (name === 'apellido') {
             setApellido(value);
-        } else if (name === 'genero') {
+        }
+        if (name === 'genero') {
             setGenero(value)
-        } else if (name === 'presencia') {
+        }
+        if (name === 'presencia') {
             setPresencia(value)
-        } else if (name === 'nota') {
+        }
+        if (name === 'nota') {
             setNota(value)
-        } else if (name === 'examenIdAsp') {
+        }
+        if (name === 'examenIdAsp') {
             setExamenIdAsp(value)
         }
     }
@@ -977,6 +877,7 @@ const Carga = () => {
                 fecha: fechaExamen,
                 turno: turnoExamen,
                 aula: aulaExamen,
+                referencia: referenciaExamen,
                 cantidad_inscriptos: cantidadExamen,
             }
 
@@ -1032,6 +933,7 @@ const Carga = () => {
                                     setCantidadExamen('');
                                     setFechaExamen('');
                                     setTurnoExamen('');
+                                    setReferenciaExamen('');
                                 })
 
                         })
@@ -1061,6 +963,16 @@ const Carga = () => {
         setNota(nota)
         setExamenIdAspActual(examen_id)
         setExamenIdAsp(examen_id)
+    }
+
+    const handleSelectExamen = (examen) => {
+        const fechaFormatted = split(examen.fecha, '-');
+        setIdExamenUpdate(examen.id_examen)
+        setFechaExamenUpdate(`${fechaFormatted[2]}-${fechaFormatted[1]}-${fechaFormatted[0]}`)
+        setTurnoExamenUpdate(examen.turno)
+        setAulaExamenUpdate(examen.aula)
+        setEstadoExamenUpdate(examen.estado)
+        setCantidadExamenUpdate(examen.cantidad_inscriptos)
     }
 
     useEffect(() => {
@@ -1096,15 +1008,16 @@ const Carga = () => {
             })
     }, [])
 
-    useEffect(() => {
-        console.log(preguntasFile)
-    }, [preguntasFile])
+
+    // useEffect(() => {
+    //     console.log(preguntasFile)
+    // }, [preguntasFile])
 
     return (
         <div className='text-xs flex flex-col w-full h-full lg:relative lg:left-52'>
             <h1 className='text-[#005CA2] font-bold text-2xl'>CARGA</h1>
             <div className='flex flex-col justify-center items-center md:flex-row gap-4'>
-                <div className='mt-6 min-h-60 w-full md:w-1/2 flex flex-col items-center justify-center bg-[#f0f0f0] rounded-md py-4'>
+                <div className='mt-6 min-h-72 max-h-72 w-full md:w-1/2 flex flex-col items-center justify-center bg-[#f0f0f0] rounded-md py-4'>
                     <div className='flex flex-row items-center'>
                         <h2 className='text-lg text-[#005CA2] pb-4 text-center w-full'>Carga aula, grupo y cantidad</h2>
                         <CiCircleInfo className='text-lg text-[#005CA2] mb-3 ml-2' data-tooltip-id="tooltip1" data-tooltip-html="
@@ -1156,6 +1069,12 @@ const Carga = () => {
                         </div>
                         <div className='flex flex-row'>
                             <div className='flex justify-end w-16'>
+                                <label htmlFor="" className='pr-2'>Referencia:</label>
+                            </div>
+                            <input type="text" value={referenciaExamen} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='referenciaExamen' onChange={(e) => handleInputExamen(e)} />
+                        </div>
+                        <div className='flex flex-row'>
+                            <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>Cantidad:</label>
                             </div>
                             <input type="number" value={cantidadExamen} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='cantidadExamen' onChange={(e) => handleInputExamen(e)} />
@@ -1163,7 +1082,7 @@ const Carga = () => {
                         <button className={`bg-[#005CA2] text-white w-fit px-10 py-1 rounded-md font-semibold ${loadingCargaExamen ? 'animate-pulse' : 'animate-none'}`} onClick={(handleCargaExamen)}>CARGAR</button>
                     </div>
                 </div>
-                <div className='mt-6 min-h-60 max-h-60 w-full md:w-1/2 flex flex-col items-center justify-center bg-[#f0f0f0] rounded-md py-4'>
+                <div className='mt-6 min-h-72 max-h-72 w-full md:w-1/2 flex flex-col items-center justify-center bg-[#f0f0f0] rounded-md py-4'>
                     <div className='flex flex-row items-center justify-center'>
                         <h2 className='text-lg text-[#005CA2] mb-2'>Carga aspirantes</h2>
                         <CiCircleInfo className='text-lg text-[#005CA2] mb-1 ml-2' data-tooltip-id="tooltip2" data-tooltip-html="
@@ -1302,18 +1221,25 @@ const Carga = () => {
                 </div>
             </div>
             {/* ESTADO EXAMENES */}
-            <div className='mt-6 min-h-64 max-h-96 w-full flex flex-row flex-wrap items-center justify-center bg-[#005CA2]/75 rounded-md py-4 gap-4 overflow-scroll'>
+            <div className='mt-6 min-h-64 max-h-96 w-full flex flex-row flex-wrap items-center justify-center bg-[#005CA2]/75 rounded-md py-4 gap-4 overflow-scroll cursor-pointer'>
                 {
                     examenes.map((examen) => {
                         return (
-                            <div className={`flex rounded-md w-28 h-auto flex-col justify-center items-center text-black px-2 py-1 ${examen.estado === 0 ? 'bg-[#f0f0f0]' : 'bg-green-300'}`} key={examen.id_examen}>
-                                <p className='text-center font-bold'>{examen.id_examen}</p>
-                                <p className='text-center'>{examen.fecha}</p>
-                                <div className='flex flex-row'>
+                            <div className={`flex rounded-md w-48 h-auto flex-col justify-center items-center text-black px-2 py-1 ${examen.estado === 0 ? 'bg-[#f0f0f0]' : 'bg-green-300'}`} key={examen.id_examen} onClick={() => handleSelectExamen(examen)}>
+                                <p className='text-center font-bold'>ID: {examen.id_examen}{examen.referencia ? ` - ${examen.referencia}` : ""}</p>
+                                <div className="flex flex-row flex-nowrap">
+                                    <p className='font-bold pr-1'>FECHA:</p>
+                                    <p className='text-center'>{examen.fecha}</p>
+                                </div>
+                                <div className='flex flex-row flex-nowrap'>
+                                    <p className='font-bold pr-1'>AULA Y TURNO:</p>
                                     <p className='text-center'>{examen.aula} - </p>
                                     <p className='text-center'>{examen.turno}</p>
                                 </div>
-                                <p className='text-center'>{examen.cantidad_inscriptos}</p>
+                                <div className='flex flex-row flex-nowrap'>
+                                    <p className='font-bold pr-1'>INSCRIPTOS:</p>
+                                    <p className='text-center'>{examen.cantidad_inscriptos}</p>
+                                </div>
                             </div>
                         )
                     })
@@ -1427,19 +1353,19 @@ const Carga = () => {
             <div className='mt-6 min-h-60 md:max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
                 <h2 className='text-lg text-[#005CA2] mb-4 text-left w-full pl-3'>Modificar aspirante</h2>
                 <div className='w-full h-auto flex flex-col md:flex-row'>
-                    <div className='w-full md:w-1/4 flex flex-col gap-5 justify-center items-center md:items-start border-b-[1px] md:border-b-0 md:border-r-[1px] border-gray-400 mb-8 md:mb-0 pb-6 md:pb-0'>
+                    <div className='w-full md:w-1/5 flex flex-col gap-5 justify-center items-center md:items-start border-b-[1px] md:border-b-0 md:border-r-[1px] border-gray-400 mb-8 md:mb-0 pb-6 md:pb-0'>
                         <div className='flex flex-row justify-center'>
                             <div className='flex justify-end w-16'>
                                 <label htmlFor="" className='pr-2'>DNI:</label>
                             </div>
-                            <input type="text" value={dniSearch} className={`w-36 px-2 bg-white border border-gray-400 rounded-md ${loadingSearchAspirante ? 'animate-pulse' : 'animate-none'}`} name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
+                            <input type="text" value={dniSearch} className={`w-24 px-2 bg-white border border-gray-400 rounded-md ${loadingSearchAspirante ? 'animate-pulse' : 'animate-none'}`} name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
                         </div>
                         <div className='flex flex-row justify-center items-center w-full'>
                             <button className='bg-[#005CA2] text-white w-fit px-10 py-[1px] rounded-md font-semibold' onClick={handleSearchAspirante}>Buscar</button>
                         </div>
                     </div>
-                    <div className='w-full md:w-3/4 h-auto flex flex-col md:flex-row justify-center items-center md:ml-8 gap-4'>
-                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full mr-4'>
+                    <div className='w-full md:w-4/5 h-auto flex flex-col md:flex-row justify-center items-center md:ml-6 gap-4'>
+                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full mr-12'>
                             <div className='flex flex-row'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Nombre:</label>
@@ -1463,8 +1389,8 @@ const Carga = () => {
                                 </select>
                             </div>
                         </div>
-                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full'>
-                            <table className='w-full ml-14'>
+                        <div className='md:w-1/4 w-full flex flex-col items-center justify-center h-full'>
+                            <table className='w-full'>
                                 <thead className='bg-[#005CA2] text-white'>
                                     <tr>
                                         <th>Presente</th>
@@ -1481,8 +1407,8 @@ const Carga = () => {
                                                     <td className='text-center'>{aspirante.presencia ? aspirante.presencia : '-'}</td>
                                                     <td className='text-center'>{aspirante.nota ? aspirante.nota : '-'}</td>
                                                     <td className='text-center'>{aspirante.examen_id ? aspirante.examen_id : '-'}</td>
-                                                    <td className='text-center'>
-                                                        <button className='bg-[#005CA2] text-white px-2 py-1 rounded-md cursor-pointer' onClick={() => handleSelectAspirante(aspirante.presencia, aspirante.nota, aspirante.examen_id)}>S</button>
+                                                    <td className='text-center' onClick={() => handleSelectAspirante(aspirante.presencia, aspirante.nota, aspirante.examen_id)}>
+                                                        <button className='bg-[#005CA2] text-white px-2 py-1 rounded-md cursor-pointer uppercase'>Carga</button>
                                                     </td>
                                                 </tr>
                                             )
