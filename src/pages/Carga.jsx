@@ -889,7 +889,7 @@ const Carga = () => {
                 credentials: 'include',
                 body: JSON.stringify(examenACargar),
             })
-                .then(response => {
+                .then(async response => {
                     if (response.status === 200) {
                         Swal.fire({
                             title: 'Examen cargado',
@@ -946,6 +946,20 @@ const Carga = () => {
                         }).then((result) => {
                             handleSession()
                         })
+                    } else {
+                        setLoadinCargaExamen(false)
+                        const error = await response.json();
+                        Swal.fire({
+                            title: 'Error al cargar el examen',
+                            icon: 'error',
+                            text: error.message || 'Ocurrió un error al cargar el examen',
+                            confirmButtonText: 'Aceptar'
+                        })
+                        setAulaExamen('');
+                        setCantidadExamen('');
+                        setFechaExamen('');
+                        setTurnoExamen('');
+                        setReferenciaExamen('');
                     }
                 })
         } else {
