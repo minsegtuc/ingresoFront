@@ -14,10 +14,12 @@ const App = () => {
       <ContextProvider>
         <Routes>
           <Route element={<RutaProtegida />}>
-            <Route path="/" element={<Home />} />
-            <Route path="estadisticas" element={<Estadisticas />} />
-            <Route path="carga" element={<Carga />} />
-            <Route path="notas" element={<Notas />} />
+            <Route path="/ingreso" element={<Home />}>
+              {/* <Route path="login" element={<Login />} /> */}
+              <Route path="estadisticas" element={<Estadisticas />} />
+              <Route path="carga" element={<Carga />} />
+              <Route path="notas" element={<Notas />} />
+            </Route>
           </Route>
         </Routes>
       </ContextProvider>
