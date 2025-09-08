@@ -675,7 +675,7 @@ const Estadisticas = () => {
             Swal.fire({
                 title: 'Información',
                 icon: 'info',
-                text: 'Para visualizar las estadísticas, por favor ingrese primero la nota de corte, luego puede usar los filtros de fecha, turno, aula y género para obtener los resultados deseados.',
+                text: 'Para visualizar las estadísticas, por favor ingrese primero la nota de corte, luego puede usar los filtros de fecha, turno, aula y género para obtener los resultados deseados',
             });
         }
     }, [])
