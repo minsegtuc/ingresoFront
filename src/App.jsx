@@ -13,9 +13,9 @@ const App = () => {
     <div>
       <ContextProvider>
         <Routes>
-          <Route path="/ingreso" element={<Home />}>
-            <Route path="login" element={<Login />} />
-            <Route element={<RutaProtegida />}>
+          <Route element={<RutaProtegida />}>
+            <Route path="/ingreso" element={<Home />}>
+              {/* <Route path="login" element={<Login />} /> */}
               <Route path="estadisticas" element={<Estadisticas />} />
               <Route path="carga" element={<Carga />} />
               <Route path="notas" element={<Notas />} />
