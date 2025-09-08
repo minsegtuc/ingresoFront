@@ -47,7 +47,7 @@ const RutaProtegida = () => {
     if (isLoading) return '';
 
     if (!login) {
-        window.location.href = "http://localhost:5173"; // o la URL que quieras
+        window.location.href = "https://srv555183.hstgr.cloud/login"; // o la URL que quieras
         return null; // importante para no renderizar nada
     }
 
