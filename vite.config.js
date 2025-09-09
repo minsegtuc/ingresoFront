@@ -30,7 +30,7 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         runtimeCaching: [{
-          urlPattern: /\/\/.*\.(js|css|html|png|jpg|jpeg|svg|ico)$/,
+          urlPattern: /\/ingreso\/.*\.(js|css|html|png|jpg|jpeg|svg|ico)$/,
           handler: 'StaleWhileRevalidate',
           options: {
             cacheName: 'static-assets',
@@ -41,7 +41,7 @@ export default defineConfig({
           },
         },
         {
-          urlPattern: /\/\/$/,
+          urlPattern: /\/ingreso\/$/,
           handler: 'NetworkFirst',
           options: {
             cacheName: 'html-pages',
