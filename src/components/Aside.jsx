@@ -28,7 +28,7 @@ const Aside = () => {
             </NavLink>
             <div className='flex flex-col lg:mt-8 mt-2 w-full'>
                 <NavLink to={'/ingreso/estadisticas'} className={`w-full bg-[#f0f0f0] text-black border-t-2 py-2 justify-center hover:bg-black hover:text-white ${(user.rol === 'SISADMIN' || user.rol === 'ADMIN' || user.rol === 'LECTOR') ? 'flex' : 'hidden'}`}>ESTADISTICAS</NavLink>
-                <NavLink to={'/ingreso/notas'} className={`w-full bg-[#f0f0f0] text-black border-t-2 py-2 flex justify-center hover:bg-black hover:text-white ${(user.rol === 'SISADMIN' || user.rol === 'ADMIN') ? 'flex' : 'hidden'}`}>NOTASS</NavLink>
+                <NavLink to={'/ingreso/notas'} className={`w-full bg-[#f0f0f0] text-black border-t-2 py-2 flex justify-center hover:bg-black hover:text-white ${(user.rol === 'SISADMIN' || user.rol === 'ADMIN') ? 'flex' : 'hidden'}`}>NOTAS</NavLink>
                 <NavLink to={'/ingreso/carga'} className={`w-full bg-[#f0f0f0] text-black border-t-2 border-b-2 py-2 flex justify-center hover:bg-black hover:text-white ${(user.rol === 'SISADMIN') ? 'flex' : 'hidden'}`}>CARGA Y MODIFICACIONES</NavLink>
                 <a href={'https://control.srv555183.hstgr.cloud/modulos'} className={`w-full bg-[#f0f0f0] text-black border-t-2 border-b-2 py-2 flex justify-center hover:bg-black hover:text-white ${(user.rol === 'SISADMIN') ? 'flex' : 'hidden'}`}>MODULOS</a>
             </div>
