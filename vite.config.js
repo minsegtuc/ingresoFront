@@ -29,28 +29,13 @@ export default defineConfig({
       workbox: {
         clientsClaim: true,
         skipWaiting: true,
-        runtimeCaching: [{
-          urlPattern: /\/ingreso\/.*\.(js|css|html|png|jpg|jpeg|svg|ico)$/,
-          handler: 'StaleWhileRevalidate',
-          options: {
-            cacheName: 'static-assets',
-            expiration: {
-              maxEntries: 50,
-              maxAgeSeconds: 60 * 60 * 24,
-            },
-          },
-        },
-        {
-          urlPattern: /\/ingreso\/$/,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'html-pages',
-            expiration: {
-              maxEntries: 5,
-              maxAgeSeconds: 60 * 60 * 24 * 365,
-            },
-          },
-        },
+        runtimeCaching: [
+          {
+            urlPattern: /^\/ingreso\/.*\.(js|css|png|jpg|jpeg|svg|ico)$/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'static-assets' }
+          }
+          // NO cachear HTML
         ]
       }
     })
