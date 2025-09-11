@@ -42,7 +42,7 @@ const Aside = () => {
                     seccionesPermitidas.map((seccion, index) => {
                         if (seccion.nombre !== "MODULOS") {
                             return (
-                                <NavLink to={seccion.enlace} className={`w-full bg-[#f0f0f0] text-black border-t-2 py-2 justify-center hover:bg-black hover:text-white`}>{seccion.nombre}</NavLink>
+                                <NavLink to={seccion.enlace} className={`w-full bg-[#f0f0f0] text-black border-t-2 py-2 justify-center hover:bg-black hover:text-white text-center`}>{seccion.nombre}</NavLink>
 
                             )
                         } else {
