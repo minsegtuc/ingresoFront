@@ -25,6 +25,18 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^\/ingreso\/.*\.(js|css|png|jpg|jpeg|svg|ico)$/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'static-assets' }
+          }
+          // NO cachear HTML
+        ]
       }
     })
   ],
