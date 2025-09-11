@@ -13,7 +13,7 @@ const Aside = () => {
     ]
 
     const seccionesPermitidas = secciones.filter(seccion =>
-        seccion.roles.include(user.rol)
+        seccion.roles.includes(user.rol)
     )
 
     const handleLogout = () => {
@@ -39,14 +39,14 @@ const Aside = () => {
             </NavLink>
             <div className='flex flex-col lg:mt-8 mt-2 w-full'>
                 {
-                    seccionesPermitidas.map((modulo, index) => {
-                        if (modulo.nombre !== "MODULOS") {
+                    seccionesPermitidas.map((seccion, index) => {
+                        if (seccion.nombre !== "MODULOS") {
                             return (
-                                <NavLink to={modulo.enlace} className={`w-full bg-[#f0f0f0] text-black border-t-2 py-2 justify-center hover:bg-black hover:text-white`}>{modulo.nombre}</NavLink>
+                                <NavLink to={seccion.enlace} className={`w-full bg-[#f0f0f0] text-black border-t-2 py-2 justify-center hover:bg-black hover:text-white`}>{modulo.nombre}</NavLink>
 
                             )
                         } else {
-                            return <a href={modulo.enlace} className={`w-full bg-[#f0f0f0] text-black border-t-2 border-b-2 py-2 flex justify-center hover:bg-black hover:text-white`}>{modulo.nombre}</a>
+                            return <a href={seccion.enlace} className={`w-full bg-[#f0f0f0] text-black border-t-2 border-b-2 py-2 flex justify-center hover:bg-black hover:text-white`}>{modulo.nombre}</a>
                         }
                     })
                 }
