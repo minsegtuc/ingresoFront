@@ -33,6 +33,7 @@ const Carga = () => {
     const [aulaExamenUpdate, setAulaExamenUpdate] = useState('');
     const [estadoExamenUpdate, setEstadoExamenUpdate] = useState('');
     const [cantidadExamenUpdate, setCantidadExamenUpdate] = useState('');
+    const [referenciaExamenUpdate, setReferenciaExamenUpdate] = useState('')
 
     //PARA LAS NOTAS
     const [fechaCarga, setFechaCarga] = useState('');
@@ -219,7 +220,7 @@ const Carga = () => {
                 }
             })
             .then(data => {
-                //console.log(data)
+                console.log(data)
                 if (data) {
                     const formattedData = data.map(examen => ({
                         ...examen,
@@ -554,6 +555,9 @@ const Carga = () => {
         if (name === 'turnoExamenUpdate') {
             setTurnoExamenUpdate(value)
         }
+        if (name === 'referenciaExamenUpdate') {
+            setReferenciaExamenUpdate(value)
+        }
         if (name === 'aulaExamenUpdate') {
             setAulaExamenUpdate(value)
         }
@@ -627,6 +631,7 @@ const Carga = () => {
                     setFechaExamenUpdate(data.fecha)
                     setTurnoExamenUpdate(data.turno)
                     setAulaExamenUpdate(data.aula)
+                    setReferenciaExamenUpdate(data.referencia)
                     setEstadoExamenUpdate(data.estado)
                     setCantidadExamenUpdate(data.cantidad_inscriptos)
                 })
@@ -712,6 +717,7 @@ const Carga = () => {
             String(fechaExamenUpdate).trim() !== '' &&
             String(turnoExamenUpdate).trim() !== '' &&
             String(aulaExamenUpdate).trim() !== '' &&
+            String(referenciaExamenUpdate).trim() !== '' &&
             String(estadoExamenUpdate).trim() !== '' &&
             String(cantidadExamenUpdate).trim() !== ''
         ) {
@@ -721,6 +727,7 @@ const Carga = () => {
                 fecha: fechaExamenUpdate,
                 turno: turnoExamenUpdate,
                 aula: aulaExamenUpdate,
+                referencia: referenciaExamenUpdate,
                 estado: estadoExamenUpdate,
                 cantidad_inscriptos: cantidadExamenUpdate,
             }
@@ -775,12 +782,12 @@ const Carga = () => {
                                     setAulaExamenSearch('');
                                     setFechaExamenSearch('');
                                     setTurnoExamenSearch('');
-                                    setFechaExamenUpdate('')
 
-                                    setIdExamenUpdate('')
                                     setFechaExamenUpdate('')
+                                    setIdExamenUpdate('')
                                     setTurnoExamenUpdate('')
                                     setAulaExamenUpdate('')
+                                    setReferenciaExamenUpdate('')
                                     setEstadoExamenUpdate('')
                                     setCantidadExamenUpdate('')
                                 })
@@ -980,11 +987,13 @@ const Carga = () => {
     }
 
     const handleSelectExamen = (examen) => {
+        console.log(examen)
         const fechaFormatted = split(examen.fecha, '-');
         setIdExamenUpdate(examen.id_examen)
         setFechaExamenUpdate(`${fechaFormatted[2]}-${fechaFormatted[1]}-${fechaFormatted[0]}`)
         setTurnoExamenUpdate(examen.turno)
         setAulaExamenUpdate(examen.aula)
+        setReferenciaExamenUpdate(examen.referencia)
         setEstadoExamenUpdate(examen.estado)
         setCantidadExamenUpdate(examen.cantidad_inscriptos)
     }
@@ -1329,8 +1338,6 @@ const Carga = () => {
                                     <option value="T06">T06</option>
                                 </select>
                             </div>
-                        </div>
-                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
                             <div className='flex flex-row'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Aula:</label>
@@ -1343,6 +1350,14 @@ const Carga = () => {
                                     <option value="AULA 04">Aula 04</option>
                                     <option value="AULA 05">Aula 05</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div className='w-1/3 flex flex-col gap-4 items-center justify-center h-full'>
+                            <div className='flex flex-row'>
+                                <div className='flex justify-end w-16 md:w-32'>
+                                    <label htmlFor="" className='pr-2'>Referencia:</label>
+                                </div>
+                                <input type="text" value={referenciaExamenUpdate} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='referenciaExamenUpdate' onChange={(e) => handleInputExamenUpdate(e)} />
                             </div>
                             <div className='flex flex-row'>
                                 <div className='flex justify-end w-16 md:w-32'>

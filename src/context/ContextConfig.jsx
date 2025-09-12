@@ -11,7 +11,7 @@ export const ContextProvider = ({ children }) => {
     const HOST =
         process.env.NODE_ENV === 'production'
             ? 'https://srv555183.hstgr.cloud:3006'
-            : 'http://localhost:3002';
+            : 'http://localhost:3005';
 
     const HOST_AUTH = process.env.NODE_ENV === 'production' ? 'https://srv555183.hstgr.cloud:3008' : 'http://localhost:3000'
 
