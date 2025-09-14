@@ -1,8 +1,10 @@
 import { useState, useContext, useEffect } from 'react'
 import { ContextConfig } from '../context/ContextConfig';
 import { BsSearch } from 'react-icons/bs';
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
+import { motion, AnimatePresence } from "framer-motion"
 
 const Notas = () => {
 
@@ -18,6 +20,8 @@ const Notas = () => {
     const [busqueda, setBusqueda] = useState('')
     const { HOST, handleSession } = useContext(ContextConfig)
 
+    const [viewFiltros, setViewFiltros] = useState(true)
+
     const handleSearch = (e) => {
         setBusqueda(e.target.value)
     }
@@ -30,16 +34,16 @@ const Notas = () => {
         }
         if (name === 'fechaHasta') {
             setFechaHasta(value);
-        } 
+        }
         if (name === 'turno') {
             setTurno(value);
-        } 
+        }
         if (name === 'aula') {
             setAula(value);
-        } 
+        }
         if (name === 'genero') {
             setGenero(value);
-        } 
+        }
         if (name === 'condicion') {
             setCondicion(value);
         }
@@ -129,81 +133,109 @@ const Notas = () => {
             })
     }
 
+    const handleViewFiltros = (estado) => {
+        console.log("Estado: ", estado)
+        setViewFiltros(estado)
+    }
+
     return (
         <div className='text-xs flex flex-col w-full h-full lg:relative lg:left-52'>
             <h1 className='text-[#005CA2] font-bold text-2xl text-center md:text-left'>NOTAS</h1>
-            <div className='bg-[#f0f0f0] p-4 mt-4 rounded-md flex flex-col md:flex-row md:justify-around'>
-                <div className='lg:w-2/3 w-full flex flex-col md:flex-row mb-4 lg:mb-0'>
-                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
-                        <div className='flex justify-center flex-row'>
-                            <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Fecha desde:</label>
-                            </div>
-                            <input type="date" name="fechaDesde" id="" className='rounded-md min-w-36 px-2' value={fechaDesde} onChange={(e) => handleChangeInput(e)} />
-                        </div>
-                        <div className='flex justify-center flex-row'>
-                            <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Fecha hasta:</label>
-                            </div>
-                            <input type="date" name="fechaHasta" id="" className='rounded-md min-w-36 px-2' value={fechaHasta} onChange={(e) => handleChangeInput(e)} />
-                        </div>
-                        <div className='flex justify-center flex-row'>
-                            <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Ingrese turno:</label>
-                            </div>
-                            <select name="turno" id="" className='rounded-md min-w-36 px-2' value={turno} onChange={(e) => handleChangeInput(e)}>
-                                <option value="">Seleccione turno</option>
-                                <option value="T01">T01</option>
-                                <option value="T02">T02</option>
-                                <option value="T03">T03</option>
-                                <option value="T04">T04</option>
-                                <option value="T05">T05</option>
-                                <option value="T06">T06</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
-                        <div className='flex justify-center items-center flex-row'>
-                            <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Ingrese aula:</label>
-                            </div>
-                            <select name="aula" id="" className='rounded-md min-w-36 px-2' value={aula} onChange={(e) => handleChangeInput(e)}>
-                                <option value="">Seleccione aula</option>
-                                <option value="AULA 01">Aula 01</option>
-                                <option value="AULA 02">Aula 02</option>
-                                <option value="AULA 03">Aula 03</option>
-                                <option value="AULA 04">Aula 04</option>
-                                <option value="AULA 05">Aula 05</option>
-                            </select>
-                        </div>
-                        <div className='flex justify-center items-center flex-row'>
-                            <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Ingrese genero:</label>
-                            </div>
-                            <select name="genero" id="" className='rounded-md min-w-36 px-2' value={genero} onChange={(e) => handleChangeInput(e)}>
-                                <option value="">Seleccione genero</option>
-                                <option value="M">Masculinos</option>
-                                <option value="F">Femeninas</option>
-                            </select>
-                        </div>
-                        <div className='flex justify-center items-center flex-row'>
-                            <div className='flex justify-end w-28 mr-4'>
-                                <label htmlFor="" className=''>Ingrese condición:</label>
-                            </div>
-                            <select name="condicion" id="" className='rounded-md min-w-36 px-2' value={condicion} onChange={(e) => handleChangeInput(e)}>
-                                <option value="">Seleccione condición</option>
-                                <option value="1">Presentes</option>
-                                <option value="0">Ausentes</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div className='lg:w-1/3 w-full flex flex-col flex-wrap gap-3 justify-center items-center'>
-                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={buscarNotas}>BUSCAR</button>
-                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={borrarFiltros}>BORRAR FILTROS</button>
-                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={() => exportarExcel(aspirantes, `aspirantes${aula ? '-' + aula : ''}${turno ? '-' + turno : ''}.xlsx`)}>EXPORTAR</button>
-                </div>
+            <div className={`mt-4 flex justify-center items-center bg-[#005CA2] ${viewFiltros ? 'rounded-t-lg' : 'rounded-lg'}`} onClick={() => handleViewFiltros(!viewFiltros)}>
+                <p className='font-semibold uppercase p-1 text-white' >Filtros</p>
+                {
+                    viewFiltros ?
+                        <IoIosArrowUp className='text-white'></IoIosArrowUp>
+                        :
+                        <IoIosArrowDown className='text-white'></IoIosArrowDown>
+                }
             </div>
+            <AnimatePresence>
+                {
+                    viewFiltros && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="overflow-hidden"
+                        >
+                            <div className='bg-[#f0f0f0] p-4 rounded-md flex flex-col md:flex-row md:justify-around'>
+                                <div className='lg:w-2/3 w-full flex flex-col md:flex-row mb-4 lg:mb-0'>
+                                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
+                                        <div className='flex justify-center flex-row'>
+                                            <div className='flex justify-end w-28 mr-4'>
+                                                <label htmlFor="" className=''>Fecha desde:</label>
+                                            </div>
+                                            <input type="date" name="fechaDesde" id="" className='rounded-md min-w-36 px-2' value={fechaDesde} onChange={(e) => handleChangeInput(e)} />
+                                        </div>
+                                        <div className='flex justify-center flex-row'>
+                                            <div className='flex justify-end w-28 mr-4'>
+                                                <label htmlFor="" className=''>Fecha hasta:</label>
+                                            </div>
+                                            <input type="date" name="fechaHasta" id="" className='rounded-md min-w-36 px-2' value={fechaHasta} onChange={(e) => handleChangeInput(e)} />
+                                        </div>
+                                        <div className='flex justify-center flex-row'>
+                                            <div className='flex justify-end w-28 mr-4'>
+                                                <label htmlFor="" className=''>Ingrese turno:</label>
+                                            </div>
+                                            <select name="turno" id="" className='rounded-md min-w-36 px-2' value={turno} onChange={(e) => handleChangeInput(e)}>
+                                                <option value="">Seleccione turno</option>
+                                                <option value="T01">T01</option>
+                                                <option value="T02">T02</option>
+                                                <option value="T03">T03</option>
+                                                <option value="T04">T04</option>
+                                                <option value="T05">T05</option>
+                                                <option value="T06">T06</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
+                                        <div className='flex justify-center items-center flex-row'>
+                                            <div className='flex justify-end w-28 mr-4'>
+                                                <label htmlFor="" className=''>Ingrese aula:</label>
+                                            </div>
+                                            <select name="aula" id="" className='rounded-md min-w-36 px-2' value={aula} onChange={(e) => handleChangeInput(e)}>
+                                                <option value="">Seleccione aula</option>
+                                                <option value="AULA 01">Aula 01</option>
+                                                <option value="AULA 02">Aula 02</option>
+                                                <option value="AULA 03">Aula 03</option>
+                                                <option value="AULA 04">Aula 04</option>
+                                                <option value="AULA 05">Aula 05</option>
+                                            </select>
+                                        </div>
+                                        <div className='flex justify-center items-center flex-row'>
+                                            <div className='flex justify-end w-28 mr-4'>
+                                                <label htmlFor="" className=''>Ingrese genero:</label>
+                                            </div>
+                                            <select name="genero" id="" className='rounded-md min-w-36 px-2' value={genero} onChange={(e) => handleChangeInput(e)}>
+                                                <option value="">Seleccione genero</option>
+                                                <option value="M">Masculinos</option>
+                                                <option value="F">Femeninas</option>
+                                            </select>
+                                        </div>
+                                        <div className='flex justify-center items-center flex-row'>
+                                            <div className='flex justify-end w-28 mr-4'>
+                                                <label htmlFor="" className=''>Ingrese condición:</label>
+                                            </div>
+                                            <select name="condicion" id="" className='rounded-md min-w-36 px-2' value={condicion} onChange={(e) => handleChangeInput(e)}>
+                                                <option value="">Seleccione condición</option>
+                                                <option value="1">Presentes</option>
+                                                <option value="0">Ausentes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='lg:w-1/3 w-full flex flex-col flex-wrap gap-3 justify-center items-center'>
+                                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={buscarNotas}>BUSCAR</button>
+                                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={borrarFiltros}>BORRAR FILTROS</button>
+                                    <button className='bg-black text-white px-4 rounded-md min-w-32 max-w-32' onClick={() => exportarExcel(aspirantes, `aspirantes${aula ? '-' + aula : ''}${turno ? '-' + turno : ''}.xlsx`)}>EXPORTAR</button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )
+                }
+            </AnimatePresence>
             <div className='relative w-full mt-4 flex justify-start items-center'>
                 <input className='w-full text-sm h-10 px-6 rounded-3xl border-[#757873] border-2' placeholder='Buscar aspirante por apellido, nombre o dni' onChange={handleSearch} />
                 <div className="absolute right-9 top-1/2 transform -translate-y-1/2">
