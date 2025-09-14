@@ -57,6 +57,7 @@ const Carga = () => {
     const [loadingSearchAspirante, setLoadingSearchAspirante] = useState(false)
     const [loadingUpdateExamen, setLoadinUpdateExamen] = useState(false)
     const [loadingUpdateAspirante, setLoadingUpdateAspirante] = useState(false)
+    const [loadingActualizarAspirante, setLoadingActualizarAspirante] = useState(false)
 
     const cambiarFormatoFecha = (fecha) => {
         const [dia, mes, año] = fecha.split('-');
@@ -814,6 +815,63 @@ const Carga = () => {
         }
     }
 
+    const handleActualizarAspirante = () => {
+        if (nombre, apellido, genero, dniSearch) {
+            setLoadingActualizarAspirante(true)
+            const aspiranteUpdate = {
+                dni: dniSearch,
+                nombre,
+                apellido,
+                genero
+            }
+
+            fetch(`${HOST}/api/examenAspirantes/updateAspirante`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(aspiranteUpdate),
+            })
+                .then(response => {
+                    if (response.status === 200) {
+                        setLoadingUpdateAspirante(false)
+                        setDniSearch('')
+                        setNombre('')
+                        setApellido('')
+                        setGenero('')
+                        setPresencia('')
+                        setNota('')
+                        setExamenIdAsp('')
+                        setDataAspirantes([])
+                        Swal.fire({
+                            title: 'Aspirante actualizado',
+                            icon: 'success',
+                            text: 'Aspirante actualizado correctamente',
+                            confirmButtonText: 'Aceptar'
+                        })
+                        return response.json();
+                    } else if (response.status === 403) {
+                        setLoadingUpdateAspirante(false)
+                        Swal.fire({
+                            title: 'Credenciales caducadas',
+                            icon: 'info',
+                            text: 'Credenciales de seguridad caducadas. Vuelva a iniciar sesion',
+                        }).then((result) => {
+                            handleSession()
+                        })
+                    }
+                })
+        } else {
+            setLoadingUpdateAspirante(false)
+            Swal.fire({
+                title: 'Campos imcompletos',
+                icon: 'info',
+                text: 'Faltan campos por completar para actualizar el aspirante'
+            })
+        }
+    }
+
     const handleUpdateAspirante = () => {
         if (nombre, apellido, genero, presencia, nota, examenIdAsp, dniSearch) {
             setLoadingUpdateAspirante(true)
@@ -849,9 +907,9 @@ const Carga = () => {
                         setDataAspirantes([])
 
                         Swal.fire({
-                            title: 'Aspirante actualizado',
+                            title: 'Examen del aspirante actualizado',
                             icon: 'success',
-                            text: 'Aspirante actualizado correctamente',
+                            text: 'Se actualizo los datos relacionados entre el aspirante y su examen',
                             confirmButtonText: 'Aceptar'
                         })
                         return response.json();
@@ -1380,34 +1438,29 @@ const Carga = () => {
             </div>
             {/* MODIFICAR ASPIRANTE */}
             <div className='mt-6 min-h-60 md:max-h-60 w-full flex flex-col bg-[#F0F0F0] rounded-md py-4 gap-4'>
-                <h2 className='text-lg text-[#005CA2] mb-4 text-left w-full pl-3'>Modificar aspirante</h2>
+                <h2 className='text-lg text-[#005CA2] mb-4 text-left w-full pl-3'>Modificar examen aspirante</h2>
                 <div className='w-full h-auto flex flex-col md:flex-row'>
-                    <div className='w-full md:w-1/5 flex flex-col gap-5 justify-center items-center md:items-start border-b-[1px] md:border-b-0 md:border-r-[1px] border-gray-400 mb-8 md:mb-0 pb-6 md:pb-0'>
-                        <div className='flex flex-row justify-center'>
-                            <div className='flex justify-end w-16'>
-                                <label htmlFor="" className='pr-2'>DNI:</label>
+                    <div className='w-full h-auto flex flex-col md:flex-row justify-center items-center gap-4'>
+                        <div className='md:w-1/5 w-full flex flex-col gap-4 items-center justify-center h-full'>
+                            <div className='flex flex-row w-full justify-center items-center'>
+                                <div className='flex justify-end w-16 md:w-32'>
+                                    <label htmlFor="" className='pr-2'>DNI:</label>
+                                </div>
+                                <input type="text" value={dniSearch} className={`w-36 px-2 bg-white border border-gray-400 rounded-md ${loadingSearchAspirante ? 'animate-pulse' : 'animate-none'}`} name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
-                            <input type="text" value={dniSearch} className={`w-24 px-2 bg-white border border-gray-400 rounded-md ${loadingSearchAspirante ? 'animate-pulse' : 'animate-none'}`} name='dniSearch' onChange={(e) => handleInputAspiranteUpdate(e)} />
-                        </div>
-                        <div className='flex flex-row justify-center items-center w-full'>
-                            <button className='bg-[#005CA2] text-white w-fit px-10 py-[1px] rounded-md font-semibold' onClick={handleSearchAspirante}>Buscar</button>
-                        </div>
-                    </div>
-                    <div className='w-full md:w-4/5 h-auto flex flex-col md:flex-row justify-center items-center md:ml-6 gap-4'>
-                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full mr-12'>
-                            <div className='flex flex-row'>
+                            <div className='flex flex-row w-full justify-center items-center'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Nombre:</label>
                                 </div>
                                 <input type="text" value={nombre} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='nombre' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
-                            <div className='flex flex-row'>
+                            <div className='flex flex-row w-full justify-center items-center'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Apellido:</label>
                                 </div>
                                 <input type="text" value={apellido} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='apellido' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
-                            <div className='flex flex-row'>
+                            <div className='flex flex-row w-full justify-center items-center'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Genero:</label>
                                 </div>
@@ -1418,7 +1471,15 @@ const Carga = () => {
                                 </select>
                             </div>
                         </div>
-                        <div className='md:w-1/4 w-full flex flex-col items-center justify-center h-full'>
+                        <div className='w-full md:w-1/5 flex flex-col gap-5 justify-center items-center md:items-start md:mb-0 md:pb-0 border-r-2 border-gray-400 h-full'>
+                            <div className='flex flex-row justify-center items-center w-full'>
+                                <button className='bg-[#005CA2] text-white min-w-32 px-8 py-[1px] rounded-md font-semibold min-h-8' onClick={handleSearchAspirante}>Buscar</button>
+                            </div>
+                            <div className='flex flex-row justify-center items-center w-full'>
+                                <button className='bg-[#005CA2] text-white min-w-32 max-w-32 px-8 py-[1px] rounded-md font-semibold min-h-8' onClick={handleActualizarAspirante}>Actualizar aspirante</button>
+                            </div>
+                        </div>
+                        <div className='md:w-1/5 w-full flex flex-col items-center justify-center h-full'>
                             <table className='w-full'>
                                 <thead className='bg-[#005CA2] text-white'>
                                     <tr>
@@ -1446,28 +1507,28 @@ const Carga = () => {
                                 </tbody>
                             </table>
                         </div>
-                        <div className='md:w-1/4 w-full flex flex-col gap-4 items-center justify-center h-full'>
-                            <div className='flex flex-row'>
+                        <div className='md:w-1/5 w-full flex flex-col gap-4 items-center justify-center h-full'>
+                            <div className='flex flex-row w-full justify-center items-center'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Presencia:</label>
                                 </div>
                                 <input type="text" value={presencia} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='presencia' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
-                            <div className='flex flex-row'>
+                            <div className='flex flex-row w-full justify-center items-center'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2'>Nota:</label>
                                 </div>
                                 <input type="text" value={nota} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='nota' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
-                            <div className='flex flex-row'>
+                            <div className='flex flex-row w-full justify-center items-center'>
                                 <div className='flex justify-end w-16 md:w-32'>
                                     <label htmlFor="" className='pr-2 text-nowrap'>Examen id:</label>
                                 </div>
                                 <input type="text" value={examenIdAsp} className='w-36 px-2 bg-white border border-gray-400 rounded-md' name='examenIdAsp' onChange={(e) => handleInputAspiranteUpdate(e)} />
                             </div>
                         </div>
-                        <div className='md:w-1/4 w-full flex justify-center'>
-                            <button className={`bg-[#005CA2] text-white w-fit px-3 py-1 rounded-md font-semibold ${loadingUpdateAspirante ? 'animate-pulse' : 'animate-none'}`} onClick={handleUpdateAspirante}>ACTUALIZAR</button>
+                        <div className='md:w-1/5 w-full flex justify-center'>
+                            <button className={`bg-[#005CA2] text-white min-w-32 max-w-32 px-4 min-h-8 py-1 rounded-md font-semibold ${loadingUpdateAspirante ? 'animate-pulse' : 'animate-none'}`} onClick={handleUpdateAspirante}>Actualizar examen asignado</button>
                         </div>
                     </div>
                 </div>
