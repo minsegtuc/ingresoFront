@@ -178,7 +178,7 @@ const Estadisticas = () => {
     };
 
     const dataPreguntas = {
-        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
+        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'],
         datasets: [
             {
                 label: 'Preguntas respondidas',
@@ -449,6 +449,16 @@ const Estadisticas = () => {
             let pregunta18 = 0;
             let pregunta19 = 0;
             let pregunta20 = 0;
+            let pregunta21 = 0;
+            let pregunta22 = 0;
+            let pregunta23 = 0;
+            let pregunta24 = 0;
+            let pregunta25 = 0;
+            let pregunta26 = 0;
+            let pregunta27 = 0;
+            let pregunta28 = 0;
+            let pregunta29 = 0;
+            let pregunta30 = 0;
 
             let masculinosAprobados = 0
             let femeninasAprobados = 0
@@ -591,6 +601,26 @@ const Estadisticas = () => {
                             pregunta19++
                         } else if (info.nota === 20) {
                             pregunta20++
+                        } else if (info.nota === 21) {
+                            pregunta21++
+                        } else if (info.nota === 22) {
+                            pregunta22++
+                        } else if (info.nota === 23) {
+                            pregunta23++
+                        } else if (info.nota === 24) {
+                            pregunta24++
+                        } else if (info.nota === 25) {
+                            pregunta25++
+                        } else if (info.nota === 26) {
+                            pregunta26++
+                        } else if (info.nota === 27) {
+                            pregunta27++
+                        } else if (info.nota === 28) {
+                            pregunta28++
+                        } else if (info.nota === 29) {
+                            pregunta29++
+                        } else if (info.nota === 30) {
+                            pregunta30++
                         }
 
                         //MASCULINOS Y FEMENINOS APROBADOS
@@ -643,7 +673,7 @@ const Estadisticas = () => {
                     let aprobadosAulaAux = [aprobaula01, aprobaula02, aprobaula03, aprobaula04, aprobaula05]
                     let desaprobadosAulaAux = [desaprobaula01, desaprobaula02, desaprobaula03, desaprobaula04, desaprobaula05]
 
-                    let preguntasAux = [pregunta1, pregunta2, pregunta3, pregunta4, pregunta5, pregunta6, pregunta7, pregunta8, pregunta9, pregunta10, pregunta11, pregunta12, pregunta13, pregunta14, pregunta15, pregunta16, pregunta17, pregunta18, pregunta19, pregunta20]
+                    let preguntasAux = [pregunta1, pregunta2, pregunta3, pregunta4, pregunta5, pregunta6, pregunta7, pregunta8, pregunta9, pregunta10, pregunta11, pregunta12, pregunta13, pregunta14, pregunta15, pregunta16, pregunta17, pregunta18, pregunta19, pregunta20, pregunta21, pregunta22, pregunta23, pregunta24, pregunta25, pregunta26, pregunta27, pregunta28, pregunta29, pregunta30 ]
                     let aprobadosGeneroAux = [masculinosAprobados, femeninasAprobados]
                     let desaprobadosGeneroAux = [masculinosDesaprobados, femeninasDesaprobadas]
 

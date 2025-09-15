@@ -1292,7 +1292,7 @@ const Carga = () => {
                                             <td className='text-center'>{examenAspirante.dni}</td>
                                             <td className='text-center'>{examenAspirante.apellido}</td>
                                             <td className='text-center'>{examenAspirante.nombre}</td>
-                                            <td className='text-center'>{examenAspirante.nota}/20</td>
+                                            <td className='text-center'>{examenAspirante.nota}/30</td>
                                         </tr>
                                     )
                                 })

@@ -59,7 +59,7 @@ const Notas = () => {
             DNI: aspirante.dni || '-',
             Apellido: aspirante.apellido || '-',
             Nombre: aspirante.nombre || '-',
-            Nota: aspirante.nota ? `${aspirante.nota}/20` : '-',
+            Nota: aspirante.nota ? `${aspirante.nota}/30` : '-',
             Genero: aspirante.genero || '-',
             Turno: aspirante.turno || '-',
             Aula: aspirante.aula || '-',
@@ -271,7 +271,7 @@ const Notas = () => {
                                             <td className='text-center'>{aspirante.dni}</td>
                                             <td className='text-center'>{aspirante.apellido}</td>
                                             <td className='text-center'>{aspirante.nombre}</td>
-                                            <td className='text-center bg-[#005CA2]/25'>{aspirante.nota ? aspirante.nota + '/20' : '-'}</td>
+                                            <td className='text-center bg-[#005CA2]/25'>{aspirante.nota ? aspirante.nota + '/30' : '-'}</td>
                                             <td className='text-center'>{aspirante.genero}</td>
                                             <td className='text-center'>{aspirante.turno}</td>
                                             <td className='text-center'>{aspirante.aula}</td>
