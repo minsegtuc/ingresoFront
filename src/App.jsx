@@ -7,7 +7,6 @@ import Estadisticas from './pages/Estadisticas'
 import Login from './pages/Login'
 import RutaProtegida from './components/RutaProtegida'
 import { ContextProvider } from './context/ContextConfig'
-import { usePwaUpdater } from './components/Update'
 
 const App = () => {
   return (
