@@ -12,9 +12,10 @@
   <div id="root"></div>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(reg => {
-          if (reg.scope.includes('/ingreso/estadisticas')) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => {
+          if (reg.scope.includes('/ingreso/')) {
+            console.log('🧹 Desregistrando SW viejo en /ingreso:', reg.scope);
             reg.unregister();
           }
         });
