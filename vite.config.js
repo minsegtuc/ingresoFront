@@ -8,6 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate', // fuerza actualización automática de la app
       includeAssets: ['favicon.ico', 'robots.txt'], // archivos extra a cachear
+      navigateFallback: '/ingreso/index.html',
       workbox: {
         clientsClaim: true,
         skipWaiting: true,
