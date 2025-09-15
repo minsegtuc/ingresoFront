@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate', // fuerza actualización automática de la app
-      filename: 'sw-ingreso',
+      filename: 'sw.js',
       scope: '/ingreso/',
       includeAssets: ['favicon.ico', 'robots.txt'], // archivos extra a cachear
       workbox: {
