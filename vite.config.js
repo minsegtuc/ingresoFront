@@ -5,25 +5,6 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({
-      registerType: 'autoUpdate', // fuerza actualización automática de la app
-      filename: 'sw.js',
-      scope: '/ingreso/',
-      includeAssets: ['favicon.ico', 'robots.txt'], // archivos extra a cachear
-      workbox: {
-        clientsClaim: true,
-        skipWaiting: true,
-        navigateFallback: '/ingreso/index.html',
-        runtimeCaching: [
-          {
-            urlPattern: /^\/ingreso\/.*\.(js|css|png|jpg|jpeg|svg|ico)$/,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'static-assets' }
-          }
-          // NO cachear HTML
-        ]
-      }
-    })
   ],
   base: '/ingreso/' // tu base path actual
 })
