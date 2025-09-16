@@ -723,7 +723,7 @@ const Estadisticas = () => {
 
     return (
         <div className='text-xs flex flex-col w-full h-full lg:relative lg:left-52'>
-            <h1 className='text-[#005CA2] font-bold text-2xl'>ESTADISTICAS</h1>
+            <h1 className='text-[#005CA2] font-bold text-2xl'>ESTADISTICASS</h1>
             <div className='bg-[#f0f0f0] p-4 mt-4 rounded-md flex flex-col md:flex-row md:justify-around'>
                 <div className='lg:w-2/3 w-full flex flex-col md:flex-row mb-4 lg:mb-0'>
                     <div className=' flex flex-col mb-2 w-full md:w-1/2 justify-center gap-2'>
