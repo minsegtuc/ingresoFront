@@ -7,6 +7,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate', // fuerza actualización automática de la app
+      scope: '/ingreso/',
+      start_url: '/ingreso/',
       includeAssets: ['favicon.ico', 'robots.txt'], // archivos extra a cachear
       workbox: {
         clientsClaim: true,
