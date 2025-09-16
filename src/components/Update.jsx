@@ -18,7 +18,15 @@ export const usePwaUpdater = () => {
     }, []);
 
     const update = () => {
-        if (reloadSW) reloadSW(true);
+        // Evitar múltiples recargas en Safari iOS
+        if (sessionStorage.getItem('pwa-reloaded')) return;
+
+        if (reloadSW) {
+            reloadSW(true).then(() => {
+                sessionStorage.setItem('pwa-reloaded', 'true');
+                window.location.reload();
+            });
+        }
     };
 
     return { showReload, update };
