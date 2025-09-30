@@ -24,7 +24,7 @@ export const ContextProvider = ({ children }) => {
         console.log(user, userAux)
 
         try {
-            const response = await fetch(`${HOST_AUTH}/auth/rol/${user.rol}`, {
+            const response = await fetch(`${HOST_AUTH}/auth/rol/${user.rol?.idRol}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
