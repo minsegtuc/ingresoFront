@@ -18,11 +18,27 @@ const RutaProtegida = () => {
             method: 'GET',
             credentials: 'include'
         }).then(res => {
-            //console.log('Respuesta de verifyToken:', res);
+            console.log('Respuesta de verifyToken:', res);
+            console.log('Content-Type:', res.headers.get('content-type'));
+            
             if (res.status === 200) {
-                return res.json();
+                // Verificar que la respuesta sea JSON antes de parsearla
+                const contentType = res.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return res.json();
+                } else {
+                    // Si no es JSON, obtener el texto para ver qué está devolviendo
+                    return res.text().then(text => {
+                        console.error('El servidor devolvió HTML en lugar de JSON:', text.substring(0, 200));
+                        throw new Error('El servidor devolvió una respuesta no válida');
+                    });
+                }
             } else {
-                throw new Error('Usuario no autenticado');
+                // Obtener el texto de la respuesta para mejor debugging
+                return res.text().then(text => {
+                    console.error('Error del servidor:', res.status, text.substring(0, 200));
+                    throw new Error(`Error del servidor: ${res.status}`);
+                });
             }
         })
             .then(data => {
@@ -37,7 +53,9 @@ const RutaProtegida = () => {
                 handleLogin();
             })
             .catch(err => {
-                console.log(err);
+                console.error('Error en verificación de token:', err);
+                // Redirigir al login en caso de error
+                window.location.href = "https://control.minsegtuc.gov.ar/login";
             })
             .finally(() => {
                 setIsLoading(false);
