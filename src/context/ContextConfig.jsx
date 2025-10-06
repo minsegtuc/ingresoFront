@@ -10,10 +10,10 @@ export const ContextProvider = ({ children }) => {
 
     const HOST =
         process.env.NODE_ENV === 'production'
-            ? 'https://srv555183.hstgr.cloud:3006'
+            ? '/ingreso-api'
             : 'http://localhost:3005';
 
-    const HOST_AUTH = process.env.NODE_ENV === 'production' ? 'https://srv555183.hstgr.cloud:3008' : 'http://localhost:3000'
+    const HOST_AUTH = process.env.NODE_ENV === 'production' ? '/auth-api' : 'http://localhost:3000'
 
     const handleLogin = (rol) => {
         setLogin(true);

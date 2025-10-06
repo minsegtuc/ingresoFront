@@ -9,7 +9,7 @@ const Aside = () => {
         { nombre: "ESTADISTICAS", enlace: '/ingreso/estadisticas', roles: ['SISADMIN', 'DENING', 'IESTADISTICAS'] },
         { nombre: "NOTAS", enlace: '/ingreso/notas', roles: ['SISADMIN', 'DENING'] },
         { nombre: "CARGA Y MODIFICACIONES", enlace: '/ingreso/carga', roles: ['SISADMIN', 'DENING'] },
-        { nombre: "MODULOS", enlace: 'https://control.srv555183.hstgr.cloud/modulos', roles: ['SISADMIN', 'DENING'] },
+        { nombre: "MODULOS", enlace: 'https://control.minsegtuc.gov.ar/modulos', roles: ['SISADMIN', 'DENING'] },
     ]
 
     const seccionesPermitidas = secciones.filter(seccion =>
