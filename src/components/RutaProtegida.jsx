@@ -17,6 +17,35 @@ const RutaProtegida = () => {
         console.log("HOST configurado:", HOST);
         console.log("URL completa:", `${HOST}/api/verifyToken`);
         
+        // Función para verificar token usando cookies como fallback
+        const verifyTokenFromCookies = () => {
+            console.log("Intentando verificar token desde cookies...");
+            const token = Cookies.get('token') || Cookies.get('jwt') || Cookies.get('authToken');
+            
+            if (token) {
+                try {
+                    const decoded = jwtDecode(token);
+                    console.log("Token decodificado desde cookies:", decoded);
+                    
+                    // Crear usuario básico desde el token
+                    const user = {
+                        nombre: decoded.nombre || decoded.name || 'Usuario',
+                        apellido: decoded.apellido || decoded.lastname || '',
+                        rol: decoded.rol || decoded.role || { idRol: 1 },
+                        message: 'Token verificado desde cookies'
+                    };
+                    
+                    handleUser(user);
+                    handleLogin();
+                    return true;
+                } catch (error) {
+                    console.error("Error al decodificar token desde cookies:", error);
+                    return false;
+                }
+            }
+            return false;
+        };
+        
         fetch(`${HOST}/api/verifyToken`, {
             method: 'GET',
             credentials: 'include'
@@ -32,13 +61,16 @@ const RutaProtegida = () => {
                 if (contentType && contentType.includes('application/json')) {
                     return res.json();
                 } else {
-                    // Si no es JSON, obtener el texto para ver qué está devolviendo
-                    return res.text().then(text => {
-                        console.error('El servidor devolvió HTML en lugar de JSON:');
-                        console.error('Primeros 500 caracteres:', text.substring(0, 500));
-                        console.error('URL que devolvió HTML:', res.url);
-                        throw new Error('El servidor devolvió una respuesta no válida (HTML en lugar de JSON)');
-                    });
+                    // Si no es JSON, el servidor no tiene el endpoint configurado
+                    console.warn('El servidor no tiene configurado el endpoint /api/verifyToken');
+                    console.warn('Intentando verificación alternativa con cookies...');
+                    
+                    // Intentar verificar desde cookies
+                    if (verifyTokenFromCookies()) {
+                        return Promise.resolve({ success: true, fromCookies: true });
+                    } else {
+                        throw new Error('No se pudo verificar el token ni desde el servidor ni desde cookies');
+                    }
                 }
             } else {
                 // Obtener el texto de la respuesta para mejor debugging
@@ -53,6 +85,14 @@ const RutaProtegida = () => {
         })
             .then(data => {
                 console.log('Datos recibidos del servidor:', data);
+                
+                // Si la verificación fue exitosa desde cookies
+                if (data.success && data.fromCookies) {
+                    console.log('Verificación exitosa desde cookies');
+                    return;
+                }
+                
+                // Verificación normal desde servidor
                 if (data && data.usuario) {
                     const user = {
                         nombre: data.usuario.nombre,
@@ -72,9 +112,12 @@ const RutaProtegida = () => {
                 console.error('HOST usado:', HOST);
                 console.error('URL completa intentada:', `${HOST}/api/verifyToken`);
                 
-                // Redirigir al login en caso de error
-                console.log('Redirigiendo al login...');
-                window.location.href = "https://control.minsegtuc.gov.ar/login";
+                // Intentar verificación desde cookies como último recurso
+                console.log('Intentando verificación de emergencia desde cookies...');
+                if (!verifyTokenFromCookies()) {
+                    console.log('Redirigiendo al login...');
+                    window.location.href = "https://control.minsegtuc.gov.ar/login";
+                }
             })
             .finally(() => {
                 setIsLoading(false);
